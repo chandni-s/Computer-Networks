@@ -1,0 +1,80 @@
+/**
+ * 
+ */
+package clientSide;
+import java.io.IOException;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+
+
+/**
+ * @author 
+ *
+ */
+public class A1Sender {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		sendInitialGreeting();
+		sendTheseFiles(3);
+
+	}
+
+	private static void sendTheseFiles(int k) {
+		
+		
+		
+		if (k < 0) {
+			System.out.println("No files exist to send");
+		}
+		System.out.println("Blahhh");
+	}
+	
+	public static void sendInitialGreeting() {
+		String server = "localhost";
+		int port = 7777;
+		
+		DataInputStream dataInFromServer = null;
+		DataOutputStream dataOutToServer = null;
+		String inMsg = null;
+		
+		
+		try {
+			System.out.println("Client socket connecting on: " + server + " port: " + port);
+			
+			Socket clientSock = new Socket(server, port);
+			System.out.println("Just connected to " + clientSock.getRemoteSocketAddress());
+
+			
+			SocketAddress ip_address = clientSock.getLocalSocketAddress();
+			System.out.println("IP Address: " + ip_address);
+			
+//			// send message out to server
+			dataOutToServer = new DataOutputStream(new BufferedOutputStream
+					(clientSock.getOutputStream()));
+			dataOutToServer.writeUTF("INITIAL_GREETING" + clientSock.getLocalSocketAddress());
+
+			
+			
+			// Receive message from server
+			
+			dataInFromServer = new DataInputStream(new BufferedInputStream
+					(clientSock.getInputStream()));
+			inMsg = dataInFromServer.readUTF();
+			System.out.println("Msg received from Server: " + inMsg);
+			
+			clientSock.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}
