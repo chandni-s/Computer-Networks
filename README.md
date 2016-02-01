@@ -9,7 +9,7 @@ To open project in Eclipse:
 1. Go to File 
 2. Click on Import
 3. Choose Git
-4. Choose from Existing local repo
+4. Choose Clone URL
 
   --------
 
