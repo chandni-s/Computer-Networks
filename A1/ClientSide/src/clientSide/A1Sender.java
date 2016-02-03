@@ -6,11 +6,15 @@ package clientSide;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -64,11 +68,13 @@ public class A1Sender {
                     }
                 }
             }
-            System.out.println(content);
+            writeToFile(content);
+            //System.out.println(content);
             
             try {
                 fr.close();
                 br.close();
+                clientSock.close();
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
@@ -76,6 +82,20 @@ public class A1Sender {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    public static void writeToFile(String content){
+    	File file = new File ("../ServerSide/StreamReceived.txt");
+    	try {
+			FileWriter fw = new FileWriter(file.getAbsoluteFile());
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(content);
+			bw.close();
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
     }
     
     public static void connect(){
@@ -130,14 +150,19 @@ public class A1Sender {
             
             //Read from server
             inFromServer = clientSock.getInputStream();
-            inServer = new DataInputStream(inFromServer);									
+            inServer = new DataInputStream(new BufferedInputStream (inFromServer));
+            inServer = new DataInputStream(inFromServer);
+            //String serverMsg = new String (inServer.read());
             System.out.println("FromServer:" + inServer.read()); 
             
+            toServer.close();
+            inServer.close();
             
         } catch (IOException e) {
             e.printStackTrace();
             try {
                 toServer.close();
+                inServer.close();
                 clientSock.close();
             } catch (IOException ex) {
                 ex.getMessage();

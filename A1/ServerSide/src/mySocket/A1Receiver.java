@@ -30,8 +30,8 @@ public class A1Receiver extends Thread {
 		try {
 			din = new DataInputStream(new BufferedInputStream(
 					socket.getInputStream()));
-			dout = new DataOutputStream(new BufferedOutputStream(
-					socket.getOutputStream()));
+			dout = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+			//dout = new DataOutputStream(socket.getOutputStream());
 			inMsg = din.readUTF(); // hear INITIAL_GREETING. This should be
 									// "/<IP_address>:<port#>" of the sender.
 			dout.writeUTF("A1Receiver at your service: "); // send a hello back
