@@ -53,10 +53,15 @@ public class A1Sender {
 		FileReader fr = null;
 		BufferedReader br = null;
 		
+		int count = 0;
+		
 		try {
 
-			for (int i = 0; i < files.length; i++) {
+			for (int i = 0; i < files.length && count < k; i++) {
 				if (files[i].isFile() && files[i].getName().endsWith(".txt")) {
+					
+					count += 1;
+					
 					System.out.println(files[i].getName());
 
 					fr = new FileReader(files[i].getName());
