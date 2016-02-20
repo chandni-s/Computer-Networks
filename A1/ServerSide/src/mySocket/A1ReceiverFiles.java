@@ -98,24 +98,37 @@ public class A1ReceiverFiles extends Thread {
 		        se.printStackTrace();
 		    }        
 		}
-		FileOutputStream fileOut = null;
+		//FileOutputStream fileOut = null;
 		int count = 0;
-		OutputStream out = null;
+		//OutputStream out = null;
+		
+		FileWriter fileOut = null;
+		BufferedWriter bufOut = null;
+		
 		for (;;){
 			try {
 				String info = dataInFromClient.readUTF();
+				System.out.println(info);
 				if (info.startsWith(";;/")){
 					//System.out.println("Got to file");
 					String name = info.substring(3);
-					//System.out.println(name);
+					
+					
+					// Got the filename and now write content of each file
+					
 					File file = new File("./Test/"+ name);
 					file.createNewFile();
-					fileOut = new FileOutputStream(file);
-					while (dataInFromClient.readUTF().contains(">>/")){
-						fileOut.write(data, 0, count);
-						fileOut.flush();
+					fileOut = new FileWriter(file);
+					bufOut = new BufferedWriter(fileOut);
+					
+					
+					while (info.endsWith(">>/")) {
+						//System.out.println(info);
+						bufOut.write(info);
+						
 					}
 					fileOut.close();
+					bufOut.close();
 					
 				}	
 							
@@ -126,7 +139,6 @@ public class A1ReceiverFiles extends Thread {
 					dataOutToClient.write(0);
 				} catch (IOException e) {
 					System.out.println("A1ReceiverFiles: End of stream");
-					out.close();
 					break;
 				}
 			}
