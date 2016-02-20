@@ -52,25 +52,25 @@ public class A1Sender {
 		File[] files = folder.listFiles();
 		FileReader fr = null;
 		BufferedReader br = null;
-		
+
 		int count = 0;
-		
+
 		try {
 
 			for (int i = 0; i < files.length && count < k; i++) {
 				if (files[i].isFile() && files[i].getName().endsWith(".txt")) {
-					
+
 					count += 1;
-					
-					System.out.println(files[i].getName());
+
+					// System.out.println(files[i].getName());
 
 					fr = new FileReader(files[i].getName());
 					br = new BufferedReader(fr);
 					String line;
 
 					while ((line = br.readLine()) != null) {
-						System.out.println(line);
-						writeToServer(line+"\n");
+						// System.out.println(line);
+						writeToServer(line + "\n");
 					}
 				}
 			}
@@ -106,7 +106,7 @@ public class A1Sender {
 			 */
 
 		} catch (IOException e) {
-			
+
 			e.printStackTrace();
 			try {
 				clientSock.close();
@@ -122,14 +122,12 @@ public class A1Sender {
 
 		try {
 			// Connecting to server
-			System.out.println("Client socket connecting on: " + server
-					+ " port: " + port);
+			System.out.println("Client socket connecting on: " + server + " port: " + port);
 
 			clientSock = new Socket(server, port);
-			System.out.println("Client connected to Server: "
-					+ clientSock.isConnected());
+			System.out.println("Client connected to Server: " + clientSock.isConnected());
 		} catch (IOException e) {
-			
+
 			System.out.println("Client socket failed to connect to server " + e.getMessage());
 			e.printStackTrace();
 

@@ -68,6 +68,7 @@ public class A1Receiver extends Thread {
 				// check whether the client closed
 				try {
 					dout.write(0);
+					System.out.println("A1Receiver: End of stream");
 				} catch (IOException e) {
 					System.out.println("A1Receiver: End of stream");
 					fileOut.close();

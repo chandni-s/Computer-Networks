@@ -17,7 +17,7 @@ public class A1Listener {
 		serverSocket.setSoTimeout(0); // listen forever.
 		for (Socket socket;;) { // keep listening
 			socket = serverSocket.accept();
-			//new A1Receiver(socket).start();
+			// new A1Receiver(socket).start();
 			new A1ReceiverFiles(socket).start();
 		}
 	}
