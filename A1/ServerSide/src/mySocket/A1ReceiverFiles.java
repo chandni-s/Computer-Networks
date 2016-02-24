@@ -32,6 +32,7 @@ public class A1ReceiverFiles extends Thread {
 
 		try {
 			socket.close();
+			System.out.println("A1ReceiverFiles: socket closed.");
 		} catch (Exception ex) {
 			System.out.println("ReceiverFiles error in closing server: "
 					+ ex.getMessage());
@@ -77,17 +78,6 @@ public class A1ReceiverFiles extends Thread {
 	}
 
 	private void readWriteDataToFile() {
-		// TODO Auto-generated method stub
-
-		// file name and file size length from
-		// client - create test dir if it doens't exist
-		// create empty files of same name
-		// write content of files received from client to files just created
-		// once the content is delimiter and size of this new file that is
-		// being written matches the file size sent by client - end the file
-		// and start writing new one if needed.
-
-		// keep receiving
 
 		// if the Test directory does not exist, create it
 		File testDir = new File("./Test");
@@ -99,7 +89,8 @@ public class A1ReceiverFiles extends Thread {
 				se.printStackTrace();
 			}
 		}
-		// FileOutputStream fileOut = null;
+		
+		//FileOutputStream fileOut = null;
 		int count = 0;
 		// OutputStream out = null;
 		String info = null;
@@ -108,6 +99,8 @@ public class A1ReceiverFiles extends Thread {
 		File file = null;
 		FileWriter fileOut = null;
 		BufferedWriter bufOut = null;
+		
+		//byte data[] = new byte[65536];
 
 		for (;;) {
 			try {
@@ -144,23 +137,29 @@ public class A1ReceiverFiles extends Thread {
 					else {
 						if (file.length() != size) {
 							bufOut.write(info);
+							bufOut.flush();
 						}
 					}
 				}
 				
-				
 				// check whether the client closed
 				try {
 					dataOutToClient.write(0);
+					System.out.println("A1ReceiverFiles: End of stream");
+					
 				} catch (IOException e) {
-					System.out.println("A1ReceiverFiles: End of stream" + e);
+					e.printStackTrace();
 					break;
 				}
+				
+					
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("A1ReceiverFiles: some other error " + e);
 				break;
 			}
+			
+			
 		}
 	}
 }
