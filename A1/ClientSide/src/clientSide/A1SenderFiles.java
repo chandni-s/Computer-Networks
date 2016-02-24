@@ -31,11 +31,16 @@ public class A1SenderFiles {
 	private static void sendTheseFiles(int k) {
 
 		connect();
+		try {
+			if (k < 1) {
+				throw new Exception("k cannot be less than 1");
 
-		if (k < 1) {
-			System.out.println("No files to send, please specify > 0");
-
+			}
 		}
+		catch (Exception e){
+			e.printStackTrace();
+		}
+		
 
 		// TODO
 		// send the file name and length of file to server
@@ -50,7 +55,7 @@ public class A1SenderFiles {
 		int count = 0;
 		try {
 
-			writeToServer("Got to SenderFiles on client side\n");
+			//writeToServer("Got to SenderFiles on client side\n");
 			for (int i = 0; i < files.length && count < k; i++) {
 
 				name = files[i].getName();
@@ -59,8 +64,16 @@ public class A1SenderFiles {
 				if (files[i].isFile() && name.endsWith(".txt")) {
 					writeToServer(";;/"+ name);
 					writeToServer("::/"+Double.toString(size));
-					System.out.println(name);
-					System.out.println(size);
+					String number = (Character.toString(name.charAt(5)));
+					//System.out.println(number);
+					try{
+						if (k < 1 || Integer.parseInt(number) != count){
+							throw new Exception("Missing files");
+						}
+					}
+					catch (Exception e){
+						e.printStackTrace();
+					}
 
 					count += 1;
 
@@ -71,7 +84,7 @@ public class A1SenderFiles {
 					
 					String line;
 					while ((line = br.readLine()) != null) {
-						System.out.print(line);
+						//System.out.print(line);
 						writeToServer(line+"\n");
 					}
 				}

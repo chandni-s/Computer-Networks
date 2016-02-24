@@ -49,9 +49,9 @@ public class A1ReceiverFiles extends Thread {
 			dataOutToClient = new DataOutputStream(new BufferedOutputStream(
 					socket.getOutputStream()));
 
-			msgFromServer = dataInFromClient.readUTF();
+			//msgFromServer = dataInFromClient.readUTF();
 
-			System.out.println("Message from client: " + msgFromServer);
+			//System.out.println("Message from client: " + msgFromServer);
 
 			dataOutToClient.writeUTF("Server Listening to clientFiles");
 
@@ -145,9 +145,9 @@ public class A1ReceiverFiles extends Thread {
 				// check whether the client closed
 				try {
 					dataOutToClient.write(0);
-					System.out.println("A1Receiver: End of stream");
+					//System.out.println("A1Receiver: End of stream");
 				} catch (IOException e) {
-					System.out.println("A1Receiver: End of stream");
+					//System.out.println("A1Receiver: End of stream");
 					fileOut.close();
 					break;
 				}
