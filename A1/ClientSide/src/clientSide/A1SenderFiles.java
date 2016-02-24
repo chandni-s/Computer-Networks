@@ -57,8 +57,10 @@ public class A1SenderFiles {
 				size = files[i].length();
 
 				if (files[i].isFile() && name.endsWith(".txt")) {
-					writeToServer(";;/"+ name+"\n");
-					//writeToServer(Double.toString(size));
+					writeToServer(";;/"+ name);
+					writeToServer("::/"+Double.toString(size));
+					System.out.println(name);
+					System.out.println(size);
 
 					count += 1;
 
@@ -69,15 +71,14 @@ public class A1SenderFiles {
 					
 					String line;
 					while ((line = br.readLine()) != null) {
-						System.out.println(line);
-						writeToServer(line);
-					}		
-					System.out.println(">>/");
-					writeToServer(">>/");
+						System.out.print(line);
+						writeToServer(line+"\n");
+					}
 				}
 				
 			}
-
+			
+			
 			fr.close();
 			br.close();
 			clientFileSock.close();

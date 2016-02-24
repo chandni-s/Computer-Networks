@@ -33,19 +33,20 @@ public class A1ReceiverFiles extends Thread {
 		try {
 			socket.close();
 		} catch (Exception ex) {
-			System.out.println("ReceiverFiles error in closing server: " + ex.getMessage());
+			System.out.println("ReceiverFiles error in closing server: "
+					+ ex.getMessage());
 		}
 	}
 
 	private void readWriteData() {
 
-	
-
 		// receive and send data to and from clientFiles
 		try {
-			dataInFromClient = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+			dataInFromClient = new DataInputStream(new BufferedInputStream(
+					socket.getInputStream()));
 
-			dataOutToClient = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+			dataOutToClient = new DataOutputStream(new BufferedOutputStream(
+					socket.getOutputStream()));
 
 			msgFromServer = dataInFromClient.readUTF();
 
@@ -60,7 +61,8 @@ public class A1ReceiverFiles extends Thread {
 		// if any error in connecting to clientFiles - close socket and exit
 		catch (Exception e) {
 
-			System.out.println("Error in setting up ServerFiles: " + e.getMessage());
+			System.out.println("Error in setting up ServerFiles: "
+					+ e.getMessage());
 
 			try {
 				socket.close();
@@ -84,71 +86,81 @@ public class A1ReceiverFiles extends Thread {
 		// once the content is delimiter and size of this new file that is
 		// being written matches the file size sent by client - end the file
 		// and start writing new one if needed.
-		
+
 		// keep receiving
-		
+
 		// if the Test directory does not exist, create it
 		File testDir = new File("./Test");
 
 		if (!testDir.exists()) {
-		    try{
-		        testDir.mkdir();
-		    } 
-		    catch(SecurityException se){
-		        se.printStackTrace();
-		    }        
+			try {
+				testDir.mkdir();
+			} catch (SecurityException se) {
+				se.printStackTrace();
+			}
 		}
-		//FileOutputStream fileOut = null;
+		// FileOutputStream fileOut = null;
 		int count = 0;
-		//OutputStream out = null;
-		
+		// OutputStream out = null;
+		String info = null;
+		String name = "";
+		double size = 0;
+		File file = null;
 		FileWriter fileOut = null;
 		BufferedWriter bufOut = null;
-		
-		for (;;){
+
+		for (;;) {
 			try {
-				String info = dataInFromClient.readUTF();
-				System.out.println(info);
-				if (info.startsWith(";;/")){
-					//System.out.println("Got to file");
-					String name = info.substring(3);
+				// as long as data is available
+				while (dataInFromClient.available() > 0) {
 					
-					
-					// Got the filename and now write content of each file
-					
-					File file = new File("./Test/"+ name);
-					file.createNewFile();
-					fileOut = new FileWriter(file);
-					bufOut = new BufferedWriter(fileOut);
-					
-					
-					while (info.endsWith(">>/")) {
-						//System.out.println(info);
-						bufOut.write(info);
-						
+					// read string output from client
+					info = dataInFromClient.readUTF(); 
+
+					// make sure all file and buffer outputs are closed
+					if (info.startsWith(";;/")) {
+
+//						if ((file != null)) {
+//							bufOut.close();
+//							fileOut.close();
+//						}
+
+						// Get the file name from string recevied from client
+						// create file with that name and open it
+						name = info.substring(3);
+						file = new File("./Test/" + name);
+						file.createNewFile();
+
+						fileOut = new FileWriter(file);
+						bufOut = new BufferedWriter(fileOut);
 					}
-					fileOut.close();
-					bufOut.close();
+
+					// if string output from clients starts with ::/ - get file size
+					else if (info.startsWith("::/")) {
+						size = Double.parseDouble(info.substring(3));
+					}
 					
-				}	
-							
-					
+					// else the string is content of file and write it to file
+					else {
+						if (file.length() != size) {
+							bufOut.write(info);
+						}
+					}
+				}
+				
 				
 				// check whether the client closed
 				try {
 					dataOutToClient.write(0);
 				} catch (IOException e) {
-					System.out.println("A1ReceiverFiles: End of stream");
-					break;
+					System.out.println("A1ReceiverFiles: End of stream " + e);
+					
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("A1ReceiverFiles: some other error " + e);
+				break;
 			}
-			catch (Exception e) {
-			System.out.println("A1ReceiverFiles: some other error " + e);
-			break;
 		}
-		}
-		
-			
 	}
 }
-
