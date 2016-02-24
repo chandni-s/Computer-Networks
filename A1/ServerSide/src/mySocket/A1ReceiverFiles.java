@@ -1,3 +1,7 @@
+/**
+ * @author Chandini Sehgal 998973375, Srihitha Maryada 999829164
+ *
+ */
 package mySocket;
 
 import java.io.BufferedInputStream;
@@ -6,19 +10,20 @@ import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.Socket;
+
+/**
+ * @author Chandini Sehgal 998973375, Srihitha Maryada 999829164
+ *
+ */
 
 public class A1ReceiverFiles extends Thread {
 
 	private Socket socket;
 	private DataInputStream dataInFromClient = null;
 	private DataOutputStream dataOutToClient = null;
-	private String msgFromServer = null;
-	private byte data[] = new byte[65536];
 
 	// call this in A1Listener
 	public A1ReceiverFiles(Socket socket) {
@@ -34,8 +39,7 @@ public class A1ReceiverFiles extends Thread {
 			socket.close();
 			System.out.println("A1ReceiverFiles: socket closed.");
 		} catch (Exception ex) {
-			System.out.println("ReceiverFiles error in closing server: "
-					+ ex.getMessage());
+			System.out.println("ReceiverFiles error in closing server: " + ex.getMessage());
 		}
 	}
 
@@ -43,15 +47,13 @@ public class A1ReceiverFiles extends Thread {
 
 		// receive and send data to and from clientFiles
 		try {
-			dataInFromClient = new DataInputStream(new BufferedInputStream(
-					socket.getInputStream()));
+			dataInFromClient = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 
-			dataOutToClient = new DataOutputStream(new BufferedOutputStream(
-					socket.getOutputStream()));
+			dataOutToClient = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
 
-			//msgFromServer = dataInFromClient.readUTF();
+			// msgFromServer = dataInFromClient.readUTF();
 
-			//System.out.println("Message from client: " + msgFromServer);
+			// System.out.println("Message from client: " + msgFromServer);
 
 			dataOutToClient.writeUTF("Server Listening to clientFiles");
 
@@ -62,8 +64,7 @@ public class A1ReceiverFiles extends Thread {
 		// if any error in connecting to clientFiles - close socket and exit
 		catch (Exception e) {
 
-			System.out.println("Error in setting up ServerFiles: "
-					+ e.getMessage());
+			System.out.println("Error in setting up ServerFiles: " + e.getMessage());
 
 			try {
 				socket.close();
@@ -89,9 +90,7 @@ public class A1ReceiverFiles extends Thread {
 				se.printStackTrace();
 			}
 		}
-		
-		//FileOutputStream fileOut = null;
-		int count = 0;
+
 		// OutputStream out = null;
 		String info = null;
 		String name = "";
@@ -99,16 +98,16 @@ public class A1ReceiverFiles extends Thread {
 		File file = null;
 		FileWriter fileOut = null;
 		BufferedWriter bufOut = null;
-		
-		//byte data[] = new byte[65536];
+
+		// byte data[] = new byte[65536];
 
 		for (;;) {
 			try {
 				// as long as data is available
 				while (dataInFromClient.available() > 0) {
-					
+
 					// read string output from client
-					info = dataInFromClient.readUTF(); 
+					info = dataInFromClient.readUTF();
 
 					// make sure all file and buffer outputs are closed
 					if (info.startsWith(";;/")) {
@@ -128,11 +127,12 @@ public class A1ReceiverFiles extends Thread {
 						bufOut = new BufferedWriter(fileOut);
 					}
 
-					// if string output from clients starts with ::/ - get file size
+					// if string output from clients starts with ::/ - get file
+					// size
 					else if (info.startsWith("::/")) {
 						size = Double.parseDouble(info.substring(3));
 					}
-					
+
 					// else the string is content of file and write it to file
 					else {
 						if (file.length() != size) {
@@ -141,13 +141,13 @@ public class A1ReceiverFiles extends Thread {
 						}
 					}
 				}
-				
+
 				// check whether the client closed
 				try {
 					dataOutToClient.write(0);
-					//System.out.println("A1Receiver: End of stream");
+					// System.out.println("A1Receiver: End of stream");
 				} catch (IOException e) {
-					//System.out.println("A1Receiver: End of stream");
+					System.out.println("A1Receiver: End of stream");
 					fileOut.close();
 					break;
 				}
