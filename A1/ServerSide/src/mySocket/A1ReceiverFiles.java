@@ -120,10 +120,10 @@ public class A1ReceiverFiles extends Thread {
 					// make sure all file and buffer outputs are closed
 					if (info.startsWith(";;/")) {
 
-//						if ((file != null)) {
-//							bufOut.close();
-//							fileOut.close();
-//						}
+						if ((file != null)) {
+							bufOut.close();
+							fileOut.close();
+						}
 
 						// Get the file name from string recevied from client
 						// create file with that name and open it
@@ -153,8 +153,8 @@ public class A1ReceiverFiles extends Thread {
 				try {
 					dataOutToClient.write(0);
 				} catch (IOException e) {
-					System.out.println("A1ReceiverFiles: End of stream " + e);
-					
+					System.out.println("A1ReceiverFiles: End of stream" + e);
+					break;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
