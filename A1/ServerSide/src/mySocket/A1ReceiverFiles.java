@@ -145,21 +145,26 @@ public class A1ReceiverFiles extends Thread {
 				// check whether the client closed
 				try {
 					dataOutToClient.write(0);
-					System.out.println("A1ReceiverFiles: End of stream");
-					
+					System.out.println("A1Receiver: End of stream");
 				} catch (IOException e) {
-					e.printStackTrace();
+					System.out.println("A1Receiver: End of stream");
+					fileOut.close();
 					break;
 				}
-				
-					
+
 			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println("A1ReceiverFiles: some other error " + e);
+				System.out.println("A1Receiver: some other error " + e);
 				break;
 			}
-			
-			
+		}
+
+		// close the socket
+		try {
+			socket.close();
+			System.out.println("A1Receiver: socket closed.");
+		} catch (IOException ex) {
+			System.out.println("A1Receiver: error while closing the socket.");
 		}
 	}
+
 }
