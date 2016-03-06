@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class VRouter {
+	
+	static 
 
 	public class IP4Packet {
 		int version;
@@ -96,6 +98,8 @@ public class VRouter {
 	}
 
 	public static List<IP4Packet> incomingPackets(String fileName) {
+		
+		List<IP4Packet> ip4Packets = new ArrayList<IP4Packet>();
 
 		// read the file and store each pack in a list
 		FileReader fr = null;
@@ -125,9 +129,12 @@ public class VRouter {
 			packetItems.add(content); // add the last packet to list array
 			
 			
+			IP4Packet ip4 = null;
 			for (int i = 0; i < packetItems.size(); i++) {
-				//System.out.println(packetItems.get(i) + "\n");
-				createPacket(packetItems.get(i));
+				// create instance of IP4Packet and put them into an ordered list for processing
+				ip4 = createPacket(packetItems.get(i));
+				ip4Packets.add(ip4);
+				
 			}
 			
 			br.close();
@@ -136,7 +143,7 @@ public class VRouter {
 			e.printStackTrace();
 		}
 
-		return null;
+		return ip4Packets;
 	}
 
 	private static IP4Packet createPacket(String string) {
@@ -147,7 +154,7 @@ public class VRouter {
 		chars = string.replaceAll(";", "").split(" ");
 		
 		
-		ip = new VRouter().new IP4Packet(Integer.parseInt(chars[0]), Integer.parseInt(chars[1]), 
+		ip = new IP4Packet(Integer.parseInt(chars[0]), Integer.parseInt(chars[1]), 
 				Integer.parseInt(chars[2]), Integer.parseInt(chars[3]), Integer.parseInt(chars[4]),
 				Integer.parseInt(chars[5]), Integer.parseInt(chars[6]), Integer.parseInt(chars[7]), 
 				Integer.parseInt(chars[8]), chars[9], chars[10], chars[11]);
