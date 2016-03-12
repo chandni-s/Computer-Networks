@@ -6,16 +6,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class VRouter {
-	
-	
 
 	private class IP4Packet {
 		int version;
@@ -104,14 +98,14 @@ public class VRouter {
 	}
 
 	public static List<IP4Packet> incomingPackets(String fileName) {
-		
+
 		List<IP4Packet> ip4Packets = new ArrayList<IP4Packet>();
 
 		// read the file and store each pack in a list
 		FileReader fr = null;
 		BufferedReader br = null;
 
-		//String file = "./" + fileName;
+		// String file = "./" + fileName;
 		String line = null, content = null;
 		List<String> packetItems = new ArrayList<String>();
 		try {
@@ -133,16 +127,16 @@ public class VRouter {
 				}
 			}
 			packetItems.add(content); // add the last packet to list array
-			
-			
+
 			IP4Packet ip4 = null;
 			for (int i = 0; i < packetItems.size(); i++) {
-				// create instance of IP4Packet and put them into an ordered list for processing
+				// create instance of IP4Packet and put them into an ordered
+				// list for processing
 				ip4 = createPacket(packetItems.get(i));
 				ip4Packets.add(ip4);
-				
+
 			}
-			
+
 			br.close();
 
 		} catch (IOException e) {
@@ -153,34 +147,42 @@ public class VRouter {
 	}
 
 	private static IP4Packet createPacket(String string) {
-		
+
 		IP4Packet ip;
-		
+
 		String[] chars = null;
 		chars = string.replaceAll(";", "").split(" ");
-		
+
 		VRouter vr = new VRouter();
-		ip = vr.new IP4Packet(Integer.parseInt(chars[0]), Integer.parseInt(chars[1]), 
-				Integer.parseInt(chars[2]), Integer.parseInt(chars[3]), Integer.parseInt(chars[4]),
-				Integer.parseInt(chars[5]), Integer.parseInt(chars[6]), Integer.parseInt(chars[7]), 
-				Integer.parseInt(chars[8]), chars[9], chars[10], chars[11]);
-		
+		ip = vr.new IP4Packet(Integer.parseInt(chars[0]),
+				Integer.parseInt(chars[1]), Integer.parseInt(chars[2]),
+				Integer.parseInt(chars[3]), Integer.parseInt(chars[4]),
+				Integer.parseInt(chars[5]), Integer.parseInt(chars[6]),
+				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]),
+				chars[9], chars[10], chars[11]);
+
 		System.out.println(ip.destAddr);
-		
-//		Inet4Address srcAddr = null, destAddr = null;
-//		
-//		try {
-//			srcAddr = (Inet4Address) Inet4Address.getByName(ip.sourceAddr);
-//			destAddr = (Inet4Address) Inet4Address.getByName(ip.destAddr);
-//		} catch (UnknownHostException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		
-		dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Testing out the drop packet");
-		
+
+		// Inet4Address srcAddr = null, destAddr = null;
+		//
+		// try {
+		// srcAddr = (Inet4Address) Inet4Address.getByName(ip.sourceAddr);
+		// destAddr = (Inet4Address) Inet4Address.getByName(ip.destAddr);
+		// } catch (UnknownHostException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		//
+		 
+		 
+		//dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
+		//		 "Testing out the drop packet");
+			 
+		//lookupInterfaces(ip.destAddr);
+		 
+
 		return ip;
-		
+
 	}
 
 	public static String checksum(IP4Packet ip4packet) {
@@ -192,52 +194,96 @@ public class VRouter {
 		return null;
 	}
 
-	
-	 public static boolean dropPacket(String sourceAddr, String
-	 destAddr, int ID, String message) { 
-		 
-		 File msgFile = null;
-		 FileWriter msgout = null;
-		 BufferedWriter bufMsg = null;
-				 
-		 
-		 try {
-			 
-			 msgFile = new File("message.txt");
-			 msgout = new FileWriter(msgFile);
-			 bufMsg = new BufferedWriter(msgout);
-			 
-			 //while (message != null ) {
-				 bufMsg.write("\nPacket " + ID + " from " + sourceAddr + " to " + destAddr + ": " + message);
-				 bufMsg.flush();
-			 
+	public static boolean dropPacket(String sourceAddr, String destAddr,
+			int ID, String message) {
 
-			 return true;
-			 
-		 } catch (IOException e) {
-			 e.printStackTrace();
-			 return false;
-			 
-		 } finally {
-			 if (msgFile != null) {
-				 try {
+		File msgFile = null;
+		FileWriter msgout = null;
+		BufferedWriter bufMsg = null;
+
+		try {
+
+			msgFile = new File("message.txt");
+			msgout = new FileWriter(msgFile);
+			bufMsg = new BufferedWriter(msgout);
+
+			// while (message != null ) {
+			bufMsg.write("\nPacket " + ID + " from " + sourceAddr + " to "
+					+ destAddr + ": " + message);
+			bufMsg.flush();
+
+			return true;
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+
+		} finally {
+			if (msgFile != null) {
+				try {
 					bufMsg.close();
 					msgout.close();
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				 
-			 }
-		 }
-	 }
-	 
-	 /* 
+
+			}
+		}
+	}
+
+	/*
 	 * public static boolean forward(IP4Packet ip4packet, IPaddress interface) {
 	 * return false; }
-	 * 
-	 * public static boolean lookupInterfaces(IPaddress ipAddress) { return
-	 * false; }
-	 * 
+	 */
+
+	/*
+	 * @ipAddress takes in a IP4Packet address and looks for it in Interfaces.txt 
+	 * @return: it address is found, it returns true, else false
+	 */
+	public static boolean lookupInterfaces(String ipAddress) {
+
+		File file = null;
+		FileReader readFile = null;
+		BufferedReader bufRead = null;
+
+		try {
+			file = new File("./Interfaces.txt");
+			readFile = new FileReader(file);
+			bufRead = new BufferedReader(readFile);
+
+			String line;
+			String[] content;
+			while ((line = bufRead.readLine()) != null) {
+				content = line.split(";");
+				
+				if (content[0].contains(ipAddress)){
+					System.out.println("\nLOOKING FOR: " + ipAddress);
+					System.out.println("FOUND IT " + content[0] +"\n");
+				}
+			}
+			
+			return true;
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+
+		finally {
+			if (file != null) {
+				try {
+					bufRead.close();
+					readFile.close();
+					
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+			}
+
+		}
+	}
+
+	/*
 	 * public static IPaddress lookupDest(IPaddress ipAddress) { return null; }
 	 */
 }
