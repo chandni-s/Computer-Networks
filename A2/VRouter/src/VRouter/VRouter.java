@@ -15,9 +15,9 @@ import java.util.List;
 
 public class VRouter {
 	
-	static 
+	
 
-	public class IP4Packet {
+	private class IP4Packet {
 		int version;
 		int ihl;
 		int tos;
@@ -159,8 +159,8 @@ public class VRouter {
 		String[] chars = null;
 		chars = string.replaceAll(";", "").split(" ");
 		
-		
-		ip = new IP4Packet(Integer.parseInt(chars[0]), Integer.parseInt(chars[1]), 
+		VRouter vr = new VRouter();
+		ip = vr.new IP4Packet(Integer.parseInt(chars[0]), Integer.parseInt(chars[1]), 
 				Integer.parseInt(chars[2]), Integer.parseInt(chars[3]), Integer.parseInt(chars[4]),
 				Integer.parseInt(chars[5]), Integer.parseInt(chars[6]), Integer.parseInt(chars[7]), 
 				Integer.parseInt(chars[8]), chars[9], chars[10], chars[11]);
