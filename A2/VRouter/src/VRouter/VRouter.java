@@ -1,8 +1,14 @@
 package VRouter;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -161,6 +167,18 @@ public class VRouter {
 		
 		System.out.println(ip.destAddr);
 		
+//		Inet4Address srcAddr = null, destAddr = null;
+//		
+//		try {
+//			srcAddr = (Inet4Address) Inet4Address.getByName(ip.sourceAddr);
+//			destAddr = (Inet4Address) Inet4Address.getByName(ip.destAddr);
+//		} catch (UnknownHostException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+		dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Testing out the drop packet");
+		
 		return ip;
 		
 	}
@@ -174,10 +192,46 @@ public class VRouter {
 		return null;
 	}
 
-	/*
-	 * public static boolean dropPacket(IPaddress sourceAddress, IPaddress
-	 * destAddress, int ID, String message) { return false; }
-	 * 
+	
+	 public static boolean dropPacket(String sourceAddr, String
+	 destAddr, int ID, String message) { 
+		 
+		 File msgFile = null;
+		 FileWriter msgout = null;
+		 BufferedWriter bufMsg = null;
+				 
+		 
+		 try {
+			 
+			 msgFile = new File("message.txt");
+			 msgout = new FileWriter(msgFile);
+			 bufMsg = new BufferedWriter(msgout);
+			 
+			 //while (message != null ) {
+				 bufMsg.write("\nPacket " + ID + " from " + sourceAddr + " to " + destAddr + ": " + message);
+				 bufMsg.flush();
+			 
+
+			 return true;
+			 
+		 } catch (IOException e) {
+			 e.printStackTrace();
+			 return false;
+			 
+		 } finally {
+			 if (msgFile != null) {
+				 try {
+					bufMsg.close();
+					msgout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				 
+			 }
+		 }
+	 }
+	 
+	 /* 
 	 * public static boolean forward(IP4Packet ip4packet, IPaddress interface) {
 	 * return false; }
 	 * 
