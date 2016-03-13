@@ -138,11 +138,12 @@ public class VRouter {
 			}
 
 			br.close();
+			fr.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-
+			
+		} 
 		return ip4Packets;
 	}
 
@@ -173,20 +174,37 @@ public class VRouter {
 		// e.printStackTrace();
 		// }
 		//
-		 
-		 
-		//dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
-		//		 "Testing out the drop packet");
-			 
-		//lookupInterfaces(ip.destAddr);
-		 
+
+		// dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
+		// "Testing out the drop packet");
+
+		// lookupInterfaces(ip.destAddr);
+		checksum(ip);
 
 		return ip;
 
 	}
 
 	public static String checksum(IP4Packet ip4packet) {
+		
+		// int to Hex
+		// Hex to binary
+		addInBinary("101", "100"); // 5+4=9:1001
+		
 		return null;
+	}
+
+	private static String addInBinary(String string, String string2) {
+		
+		int i1 = Integer.parseInt(string, 2);
+		int i2 = Integer.parseInt(string2, 2);
+		
+		
+		String checksum = Integer.toBinaryString(i1 + i2);
+		System.out.println("1: " + i1 + " 2: " + i2 + " checksum: " + checksum);
+		
+		return checksum;
+		
 	}
 
 	public static List<IP4Packet> fragment(IP4Packet ip4packet, int MTU) {
@@ -237,7 +255,9 @@ public class VRouter {
 	 */
 
 	/*
-	 * @ipAddress takes in a IP4Packet address and looks for it in Interfaces.txt 
+	 * @ipAddress takes in a IP4Packet address and looks for it in
+	 * Interfaces.txt
+	 * 
 	 * @return: it address is found, it returns true, else false
 	 */
 	public static boolean lookupInterfaces(String ipAddress) {
@@ -255,15 +275,15 @@ public class VRouter {
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
-				
-				if (content[0].contains(ipAddress)){
+
+				if (content[0].contains(ipAddress)) {
 					System.out.println("\nLOOKING FOR: " + ipAddress);
-					System.out.println("FOUND IT " + content[0] +"\n");
+					System.out.println("FOUND IT " + content[0] + "\n");
 				}
 			}
-			
+
 			return true;
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
@@ -274,7 +294,7 @@ public class VRouter {
 				try {
 					bufRead.close();
 					readFile.close();
-					
+
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -283,7 +303,8 @@ public class VRouter {
 		}
 	}
 
-	/*
-	 * public static IPaddress lookupDest(IPaddress ipAddress) { return null; }
-	 */
+	public static String lookupDest(String ipAddress) {
+		return null;
+	}
+
 }
