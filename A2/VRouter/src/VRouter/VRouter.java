@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class VRouter {
 	private static HashMap<String, Integer> interfaces= new HashMap<String, Integer>();
 	private static HashMap<String, String> forwardingTable = new HashMap<String, String>();
 
-	private class IP4Packet {
+	protected class IP4Packet {
 		int version;
 		int ihl;
 		int tos;
@@ -44,10 +45,6 @@ public class VRouter {
 			this.checksum = checksum;
 			this.sourceAddr = sourceAddr;
 			this.destAddr = destAddr;
-		}
-
-		public void setVersion(int version) {
-			this.version = version;
 		}
 
 		public void setIhl(int ihl) {
@@ -144,6 +141,7 @@ public class VRouter {
 				ip4Packets.add(ip4);
 
 			}
+			
 
 			br.close();
 
@@ -169,7 +167,7 @@ public class VRouter {
 				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]),
 				chars[9], chars[10], chars[11]);
 
-		System.out.println(ip.destAddr);
+		System.out.println(ip.totalLen);
 
 		// Inet4Address srcAddr = null, destAddr = null;
 		//
@@ -188,6 +186,7 @@ public class VRouter {
 		//readInterfaces(ip.destAddr);
 		//checksum(ip);
 		fragment(ip, 300);
+		
 
 		return ip;
 
@@ -219,6 +218,8 @@ public class VRouter {
 		
 		List<IP4Packet> fragments = new ArrayList<IP4Packet>();
 		
+		int k =0;
+		
 		// if MTU < size of packet
 		if (ip4packet.totalLen <= MTU) {
 			System.out.println("Size of packet is <= MTU: " + ip4packet.totalLen + MTU);
@@ -227,11 +228,60 @@ public class VRouter {
 		}
 		
 		// if DF is set to 1, drop the packet an return [] list
+
+		
 		char[] bits = String.valueOf(ip4packet.flags).toCharArray();
 		if (bits[1] == '1') {
+			System.out.println("DF Field set!");
 			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id, "Fragmentation needed and DF set");
 			return fragments;
 		}
+		
+		// number of bytes in payload is totalLength field
+
+		IP4Packet newPack = null;
+		VRouter vr = new VRouter();
+		
+		System.out.println(Math.ceil((double)(ip4packet.totalLen - 20) / MTU));
+		double newLength = Math.ceil((float)(ip4packet.totalLen - 20) / MTU); // gives # of fragments needed
+		int packetNumber = (int) newLength;
+		int newSize = 0;
+		int count = 0;
+		
+		
+		while (newSize <= ip4packet.totalLen) {
+			
+			System.out.println("count " + count + "   packetNumber: " + packetNumber);
+			
+			if(count < packetNumber){
+				newPack = vr.new IP4Packet(ip4packet.version, ip4packet.ihl ,ip4packet.tos, MTU-20, 
+						ip4packet.id, ip4packet.flags, 0, ip4packet.ttl-1, ip4packet.protocol, 
+						ip4packet.checksum, ip4packet.sourceAddr, ip4packet.destAddr);
+			}
+			else {
+				
+				// Handle the last packet case - change the DF flag and packet size
+				
+				//System.out.println("NewSize is: " + newSize);
+				int sssize = ip4packet.totalLen - ((MTU-20)*(packetNumber-1)) ;
+				//int lastPacketSize = ((ip4packet.totalLen - newSize)+(20*packetNumber));
+				
+				newPack = vr.new IP4Packet(ip4packet.version, ip4packet.ihl ,ip4packet.tos, sssize, 
+						ip4packet.id, "000", 0, ip4packet.ttl-1, ip4packet.protocol, 
+						ip4packet.checksum, ip4packet.sourceAddr, ip4packet.destAddr);
+				
+			}
+			count += 1;
+			newSize += (MTU-20);
+			fragments.add(newPack);
+		}
+		
+		for (int i=0; i<fragments.size(); i++) {
+			System.out.println("YOOO "+fragments.get(i).flags + "---" + fragments.get(i).totalLen);
+		}
+		
+		
+		
 		return fragments;
 		
 	}
