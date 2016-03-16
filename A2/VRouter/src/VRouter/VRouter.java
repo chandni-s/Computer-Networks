@@ -21,7 +21,7 @@ public class VRouter {
 		int tos;
 		int totalLen;
 		int id;
-		int flags;
+		String flags;
 		int fragOffset;
 		int ttl;
 		int protocol;
@@ -30,7 +30,7 @@ public class VRouter {
 		String destAddr;
 
 		public IP4Packet(int version, int ihl, int tos, int totalLen, int id,
-				int flags, int fragOffset, int ttl, int protocol,
+				String flags, int fragOffset, int ttl, int protocol,
 				String checksum, String sourceAddr, String destAddr) {
 			this.version = version;
 			this.ihl = ihl;
@@ -66,7 +66,7 @@ public class VRouter {
 			this.id = id;
 		}
 
-		public void setFlags(int flags) {
+		public void setFlags(String flags) {
 			this.flags = flags;
 		}
 
@@ -97,12 +97,11 @@ public class VRouter {
 	}
 
 	public static void main(String[] args) {
-		//incomingPackets("InPackets.txt");
+		incomingPackets("InPackets.txt");
 		//readInterfaces();
 		//lookupInterfaces("191.168.0.0");
 		//readFowardingTable();
 		//convertStringToBinary();
-		convertIntToBinary(5);
 
 	}
 
@@ -166,7 +165,7 @@ public class VRouter {
 		ip = vr.new IP4Packet(Integer.parseInt(chars[0]),
 				Integer.parseInt(chars[1]), Integer.parseInt(chars[2]),
 				Integer.parseInt(chars[3]), Integer.parseInt(chars[4]),
-				Integer.parseInt(chars[5]), Integer.parseInt(chars[6]),
+				chars[5], Integer.parseInt(chars[6]),
 				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]),
 				chars[9], chars[10], chars[11]);
 
@@ -188,6 +187,7 @@ public class VRouter {
 
 		//readInterfaces(ip.destAddr);
 		//checksum(ip);
+		fragment(ip, 300);
 
 		return ip;
 
@@ -219,30 +219,24 @@ public class VRouter {
 		
 		List<IP4Packet> fragments = new ArrayList<IP4Packet>();
 		
-		
+		// if MTU < size of packet
 		if (ip4packet.totalLen <= MTU) {
 			System.out.println("Size of packet is <= MTU: " + ip4packet.totalLen + MTU);
+			fragments.add(ip4packet);
+			return fragments;
 		}
 		
-		// Flag: is 3 bit, 010, 100, 001, 000, 111
-		// if DF i.e bit-2 is 1 = drop the packet an return [] list
+		// if DF is set to 1, drop the packet an return [] list
+		char[] bits = String.valueOf(ip4packet.flags).toCharArray();
+		if (bits[1] == '1') {
+			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id, "Fragmentation needed and DF set");
+			return fragments;
+		}
+		return fragments;
 		
-		
-		
-
-		return null;
 	}
 	
-	public static String convertIntToBinary(int convert) {
-		
-		//String flag = convertIntToBinary(010);
-		Long flagbits = new Long(010);
-		if ((flagbits & (1L << 1)) != 0) {
-			System.out.println("idk what's happening");
-		}
-		
-		return Integer.toString(convert, 2);
-	}
+	
 
 	public static boolean dropPacket(String sourceAddr, String destAddr,
 			int ID, String message) {
@@ -257,7 +251,6 @@ public class VRouter {
 			msgout = new FileWriter(msgFile);
 			bufMsg = new BufferedWriter(msgout);
 
-			// while (message != null ) {
 			bufMsg.write("\nPacket " + ID + " from " + sourceAddr + " to "
 					+ destAddr + ": " + message);
 			bufMsg.flush();
