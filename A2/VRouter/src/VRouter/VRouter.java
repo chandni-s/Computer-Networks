@@ -7,9 +7,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class VRouter {
+	
+	private static HashMap<String, Integer> interfaces= new HashMap<String, Integer>();
+	private static HashMap<String, String> forwardingTable = new HashMap<String, String>();
 
 	private class IP4Packet {
 		int version;
@@ -93,7 +97,12 @@ public class VRouter {
 	}
 
 	public static void main(String[] args) {
-		incomingPackets("InPackets.txt");
+		//incomingPackets("InPackets.txt");
+		//readInterfaces();
+		//lookupInterfaces("191.168.0.0");
+		//readFowardingTable();
+		//convertStringToBinary();
+		convertIntToBinary(5);
 
 	}
 
@@ -138,7 +147,6 @@ public class VRouter {
 			}
 
 			br.close();
-			fr.close();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -178,8 +186,8 @@ public class VRouter {
 		// dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
 		// "Testing out the drop packet");
 
-		// lookupInterfaces(ip.destAddr);
-		checksum(ip);
+		//readInterfaces(ip.destAddr);
+		//checksum(ip);
 
 		return ip;
 
@@ -208,8 +216,32 @@ public class VRouter {
 	}
 
 	public static List<IP4Packet> fragment(IP4Packet ip4packet, int MTU) {
+		
+		List<IP4Packet> fragments = new ArrayList<IP4Packet>();
+		
+		
+		if (ip4packet.totalLen <= MTU) {
+			System.out.println("Size of packet is <= MTU: " + ip4packet.totalLen + MTU);
+		}
+		
+		// Flag: is 3 bit, 010, 100, 001, 000, 111
+		// if DF i.e bit-2 is 1 = drop the packet an return [] list
+		
+		
+		
 
 		return null;
+	}
+	
+	public static String convertIntToBinary(int convert) {
+		
+		//String flag = convertIntToBinary(010);
+		Long flagbits = new Long(010);
+		if ((flagbits & (1L << 1)) != 0) {
+			System.out.println("idk what's happening");
+		}
+		
+		return Integer.toString(convert, 2);
 	}
 
 	public static boolean dropPacket(String sourceAddr, String destAddr,
@@ -255,12 +287,14 @@ public class VRouter {
 	 */
 
 	/*
-	 * @ipAddress takes in a IP4Packet address and looks for it in
-	 * Interfaces.txt
+	 
+	 * store all interfaces in a hash map after reading from file
+	 * split ; - and first two values and store the last one - generates the prefix:
+	 * ipAdd & mask
 	 * 
-	 * @return: it address is found, it returns true, else false
+	 * below function should just return true or false
 	 */
-	public static boolean lookupInterfaces(String ipAddress) {
+	public static void readInterfaces() {
 
 		File file = null;
 		FileReader readFile = null;
@@ -274,19 +308,17 @@ public class VRouter {
 			String line;
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
-				content = line.split(";");
+				content = line.split(";"); // escape ;
 
-				if (content[0].contains(ipAddress)) {
-					System.out.println("\nLOOKING FOR: " + ipAddress);
-					System.out.println("FOUND IT " + content[0] + "\n");
-				}
+				int mtus = Integer.parseInt(content[2]);
+				interfaces.put(content[0] + " " + content[1], mtus);
+				
 			}
+			System.out.println(interfaces.keySet());
 
-			return true;
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
 		}
 
 		finally {
@@ -302,7 +334,75 @@ public class VRouter {
 
 		}
 	}
+	
+	public static boolean lookupInterfaces(String ipAddress) {
+		if (interfaces.containsKey(ipAddress)){
+			System.out.println("FOUND IT!");
+			return true;
+		}
+		return false;
+		
+	}
 
+	// mask with ipAddress pass and get the ipAddress in fwd table [0]
+	// longest prefix is: 192.0.1.3; 255.255.255.0 and them = 
+	// hashmap: and [0] & [1] , [2] & [3], [1] separately - split by ;
+	
+	public static void readFowardingTable() {
+		
+		File file = null;
+		FileReader readFile = null;
+		BufferedReader bufRead = null;
+
+		try {
+			file = new File("./ForwardingTable.txt");
+			readFile = new FileReader(file);
+			bufRead = new BufferedReader(readFile);
+
+			String line;
+			String[] content;
+			while ((line = bufRead.readLine()) != null) {
+				content = line.split(";");
+				
+				forwardingTable.put(content[0] + " " + content[1], content[2] + " " + content[3]);
+			}
+			System.out.println(forwardingTable);
+//			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		finally {
+			
+			try {
+				if (file != null) {
+					bufRead.close();
+					readFile.close();
+					
+				}
+			}
+			 catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			
+		}
+
+	}
+
+	
+	public static void convertStringToBinary() {
+		String[] sample = interfaces.keySet().toString().replaceAll("\\[", "").replaceAll("\\]", "").split(" ");
+		int[] results = new int[sample.length];
+		for (int i=0; i<sample.length; i++){
+			//System.out.println(sample[i].replaceAll("\\,", ""));
+
+			//results[i] = Integer.parseInt(sample[0].trim());
+			String numberAsString = sample[0].trim();
+			System.out.println(numberAsString);
+		}
+		
+	}
+	
 	public static String lookupDest(String ipAddress) {
 		return null;
 	}
