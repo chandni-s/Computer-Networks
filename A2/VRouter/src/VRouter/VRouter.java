@@ -182,7 +182,7 @@ public class VRouter {
 
 		// readInterfaces(ip.destAddr);
 		// checksum(ip);
-		fragment(ip, 300);
+		fragment(ip, 400);
 
 		return ip;
 
@@ -239,6 +239,8 @@ public class VRouter {
 		int packetNumber = (int) numOfFragments;
 		int sizeOfEachPacket = 0;
 		int count = 1;
+		
+		int offset = (MTU - 20) / 8;
 
 		while (sizeOfEachPacket < ip4packet.totalLen) {
 
@@ -255,6 +257,14 @@ public class VRouter {
 						0, ip4packet.ttl - 1, ip4packet.protocol,
 						ip4packet.checksum, ip4packet.sourceAddr,
 						ip4packet.destAddr);
+				
+				// offset for 1st packet = 0
+				if (count == 1) {
+					newPack.fragOffset = 0;
+				}
+				else {
+					newPack.fragOffset = offset*(count-1);
+				}
 
 			} else {
 
@@ -265,7 +275,7 @@ public class VRouter {
 
 				newPack = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
 						ip4packet.tos, sizeOfLastPacket, ip4packet.id, "000",
-						0, ip4packet.ttl - 1, ip4packet.protocol,
+						offset*(count-1), ip4packet.ttl - 1, ip4packet.protocol,
 						ip4packet.checksum, ip4packet.sourceAddr,
 						ip4packet.destAddr);
 
