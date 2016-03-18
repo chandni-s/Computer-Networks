@@ -91,6 +91,11 @@ public class VRouter {
 			this.destAddr = destAddr;
 		}
 
+		public String getChecksumBin() {
+			String checksumVal = this.checksum.replace("-", "");
+			return checksumVal;
+		}
+
 	}
 
 	public static List<IP4Packet> incomingPackets(String fileName) {
@@ -598,10 +603,10 @@ public class VRouter {
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
 			String checksum = checksum(ip);
-			// if (ip.getChecksumBin().equals(checksum)){
-			// System.out.println(i + ": Checksum passed");
-			//
-			// }
+			if (ip.getChecksumBin().equals(checksum)) {
+				System.out.println(i + ": Checksum passed");
+
+			}
 		}
 	}
 }
