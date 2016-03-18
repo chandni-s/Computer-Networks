@@ -7,7 +7,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -107,7 +106,6 @@ public class VRouter {
 		List<IP4Packet> ip4Packets = new ArrayList<IP4Packet>();
 
 		// read the file and store each pack in a list
-		FileReader fr = null;
 		BufferedReader br = null;
 
 		// String file = "./" + fileName;
@@ -213,8 +211,6 @@ public class VRouter {
 
 		List<IP4Packet> fragments = new ArrayList<IP4Packet>();
 
-		int k = 0;
-
 		// If MTU is at least as great as the size of ip4packet, 
 		// return ip4packet as is since no fragmentation is needed
 		if (ip4packet.totalLen < MTU) {
@@ -232,7 +228,7 @@ public class VRouter {
 			return fragments;
 		}
 
-		IP4Packet newPack = null;
+		IP4Packet newIPacket = null;
 		VRouter vr = new VRouter();
 
 		double numOfFragments = Math.ceil((float) (ip4packet.totalLen - 20) / (MTU - 20));
@@ -252,7 +248,7 @@ public class VRouter {
 
 				// first packet: offset = 0
 				
-				newPack = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
+				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
 						ip4packet.tos, MTU - 20, ip4packet.id, ip4packet.flags,
 						0, ip4packet.ttl - 1, ip4packet.protocol,
 						ip4packet.checksum, ip4packet.sourceAddr,
@@ -260,10 +256,10 @@ public class VRouter {
 				
 				// offset for 1st packet = 0
 				if (count == 1) {
-					newPack.fragOffset = 0;
+					newIPacket.fragOffset = 0;
 				}
 				else {
-					newPack.fragOffset = offset*(count-1);
+					newIPacket.fragOffset = offset*(count-1);
 				}
 
 			} else {
@@ -273,7 +269,7 @@ public class VRouter {
 				int sizeOfLastPacket = ip4packet.totalLen
 						- ((MTU - 20) * (packetNumber - 1));
 
-				newPack = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
+				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
 						ip4packet.tos, sizeOfLastPacket, ip4packet.id, "000",
 						offset*(count-1), ip4packet.ttl - 1, ip4packet.protocol,
 						ip4packet.checksum, ip4packet.sourceAddr,
@@ -282,7 +278,7 @@ public class VRouter {
 			}
 			count += 1;
 			sizeOfEachPacket += (MTU - 20);
-			fragments.add(newPack);
+			fragments.add(newIPacket);
 		}
 
 		// Testing purposes
@@ -440,7 +436,6 @@ public class VRouter {
 	public static void convertStringToBinary() {
 		String[] sample = interfaces.keySet().toString().replaceAll("\\[", "")
 				.replaceAll("\\]", "").split(" ");
-		int[] results = new int[sample.length];
 		for (int i = 0; i < sample.length; i++) {
 			// System.out.println(sample[i].replaceAll("\\,", ""));
 
