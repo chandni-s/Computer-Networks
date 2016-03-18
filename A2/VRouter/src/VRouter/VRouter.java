@@ -87,14 +87,11 @@ public class VRouter {
 		public void setDestAddr(String destAddr) {
 			this.destAddr = destAddr;
 		}
-
-	}
-
-	public static void main(String[] args) {
-		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
-		VRouter vr = new VRouter();
-		IP4Packet ip = vr.new IP4Packet(4, 5, 0, 60, 7238, "100", 0, 64, 6,"0", "4.40.48", "25.72");
-		checksum(ip4Packets.get(0));
+		
+		public String getChecksumBin (){
+			String checksumVal = this.checksum.replace("-", "");
+			return checksumVal;
+		}
 
 	}
 
@@ -106,7 +103,6 @@ public class VRouter {
 		FileReader fr = null;
 		BufferedReader br = null;
 
-		// String file = "./" + fileName;
 		String line = null, content = null;
 		List<String> packetItems = new ArrayList<String>();
 		try {
@@ -148,6 +144,10 @@ public class VRouter {
 	}
 
 	private static IP4Packet createPacket(String string) {
+		/*
+		 * Helper function for incomingPackets. Returns an IP4Packet with all
+		 * the attributes set.
+		 */
 
 		IP4Packet ip;
 
@@ -159,97 +159,89 @@ public class VRouter {
 				Integer.parseInt(chars[3]), Integer.parseInt(chars[4]), chars[5], Integer.parseInt(chars[6]),
 				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]), chars[9], chars[10], chars[11]);
 
-		System.out.println(ip.destAddr);
-
 		return ip;
 
 	}
 
 	public static String checksum(IP4Packet ip4packet) {
 
+		/*
+		 * Returns the checksum calculated for the given ip4packet.
+		 */
+		String checksumOriginal = ip4packet.checksum;
 		// Set checksum field to 0
 		ip4packet.checksum = "0";
-		ArrayList<String> hexList = convertHex(ip4packet);
-		System.out.println(hexList);
+		
 
+		// Call helper method convertHex that parses the ip4packet and
+		// returns a list where each element is a 4byte hexadecimal
+		ArrayList<String> hexList = convertHex(ip4packet);
+
+		// Convert each 4byte hexadecimal value into 16 bit binary values
 		ArrayList<String> binList = new ArrayList<String>();
 		for (int i = 0; i < hexList.size(); i++) {
 			int b = Integer.parseInt(hexList.get(i), 16);
-			String bin = convertHexHelper(Integer.toBinaryString(b), 16);
+			String bin = addPadding(Integer.toBinaryString(b), 16, "0");
 			binList.add(bin);
 		}
 
-		System.out.println(binList);
+		// Call helper method getSum that finds the sum of all the 16 bit binary
+		// values with the carry
 		String checksumValue = getSum(binList);
-		System.out.println(checksumValue);
-		//Need to find one's complement
+
+		// Find one's complement of the sum
+		String c1 = checksumValue.replace("0", ">");
+		String c2 = c1.replace("1", "0");
+		String checksumFinal = c2.replace(">", "1");
 		
-		return checksumValue;
-		//4500 0514 42A2 2140 8001 50B2(Header Checksum) C0A8 0003 C0A8 0001
-
-	}
-
-	public static String getSum(ArrayList<String> binList) {
-		BigInteger sum = new BigInteger("0");
-		for (int i = 0; i < binList.size(); i++) {
-			sum = sum.add(new BigInteger(binList.get(i), 2));
-
-			// Splits the sum by removing the carry once the sum goes past 16
-			// bits
-			if (sum.toString(2).length() > 16) {
-				String s1 = sum.toString(2).substring(sum.toString(2).length() - 16, sum.toString(2).length());
-				String s2 = sum.toString(2).substring(0, sum.toString(2).length() - 16);
-
-				BigInteger num1 = new BigInteger(s1, 2);
-				BigInteger num2 = new BigInteger(s2, 2);
-				sum = num1.add(num2);
-			}
-
-		}
-		String value = sum.toString(2);
-		return value;
-
-		// System.out.println(sum.toString(16));
-		// 110101000010000
+		//System.out.println(checksumFinal);
 		
+		ip4packet.checksum = checksumOriginal;
+
+		return checksumFinal;
+
 	}
 
 	public static ArrayList<String> convertHex(IP4Packet ip4packet) {
 
+		/*
+		 * Helper function for checksum. Parses all attributes of the given
+		 * ip4packet and converts them into hexadecimal values based on
+		 * specifications given in IP4Header.pdf Returns an ArrayList of strings
+		 * where each element is a 4 byte hexadecimal value.
+		 */
+
 		ArrayList<String> hexList = new ArrayList<String>();
-		String hex1 = null;
-		hex1 = convertHexHelper(Integer.toHexString(ip4packet.version), 1);
-		hex1 += convertHexHelper(Integer.toHexString(ip4packet.ihl), 1);
-		hex1 += convertHexHelper(Integer.toHexString(ip4packet.tos), 2);
 
-		String hex2 = convertHexHelper(Integer.toHexString(ip4packet.totalLen), 4);
+		// Convert each ip4packet field to hex and use helper function
+		// addPadding to add appropriate padding for each field.
+		String hex1 = addPadding(Integer.toHexString(ip4packet.version), 1, "0");
+		hex1 += addPadding(Integer.toHexString(ip4packet.ihl), 1, "0");
+		hex1 += addPadding(Integer.toHexString(ip4packet.tos), 2, "0");
 
-		String hex3 = convertHexHelper(Integer.toHexString(ip4packet.id), 4);
+		String hex2 = addPadding(Integer.toHexString(ip4packet.totalLen), 4, "0");
 
-		String hex4 = convertHexHelper(Integer.toHexString((Integer.parseInt(ip4packet.flags, 2))), 1);
-		hex4 += convertHexHelper(Integer.toHexString(ip4packet.fragOffset), 3);
+		String hex3 = addPadding(Integer.toHexString(ip4packet.id), 4, "0");
 
-		String hex5 = convertHexHelper(Integer.toHexString(ip4packet.ttl), 2);
-		hex5 += convertHexHelper(Integer.toHexString(ip4packet.protocol), 2);
+		String b1 = addPadding(ip4packet.flags, 3, "0");
+		String b2 = addPadding(Integer.toBinaryString(ip4packet.fragOffset), 13, "0");
+		String bFinal = b1 + b2;
+		String hex4 = Integer.toHexString(Integer.parseInt(bFinal, 2));
 
-		String hex6 = convertHexHelper(ip4packet.checksum, 4);
+		String hex5 = addPadding(Integer.toHexString(ip4packet.ttl), 2, "0");
+		hex5 += addPadding(Integer.toHexString(ip4packet.protocol), 2, "0");
 
-		String s = ip4packet.sourceAddr.replaceAll("\\.", "");
-		System.out.println(s);
-		int i = Integer.parseInt(s);
-		
-		String s1 = convertHexHelper(Integer.toHexString(i), 8);
-		String hex7 = s1.substring(0, 4);
-		String hex8 = s1.substring(4, 8);
+		String hex6 = addPadding(ip4packet.checksum, 4, "0");
 
-		String s2 = ip4packet.destAddr.replaceAll("\\.", "");
-		int i1 = Integer.parseInt(s2);
-		String s3 = convertHexHelper(Integer.toHexString(i1), 8);
-		String hex9 = s3.substring(0, 4);
-		String hex10 = s3.substring(4, 8);
+		// Use helper function ipToHex to convert ip address into hex.
+		String s = ipToHex(ip4packet.sourceAddr);
 
-		// System.out.println(hex1 + "\n" + hex2 + "\n" + hex3 + "\n" + hex4 +
-		// "\n" + hex5 + "\n" + hex6 + "\n" + hex7 + "\n" + hex8);
+		String hex7 = s.substring(0, 4);
+		String hex8 = s.substring(4, 8);
+
+		String s1 = ipToHex(ip4packet.destAddr);
+		String hex9 = s1.substring(0, 4);
+		String hex10 = s1.substring(4, 8);
 
 		hexList.add(hex1);
 		hexList.add(hex2);
@@ -266,57 +258,73 @@ public class VRouter {
 
 	}
 
-	public static String convertHexHelper(String s, int l) {
-		while (s.length() < l) {
-			s = "0" + s;
+	public static String addPadding(String s, int len, String pad) {
+		/*
+		 * Helper function for convertHex. Returns a string with the appropriate
+		 * padding added to the start of the given input with the given length.
+		 */
+		while (s.length() < len) {
+			s = pad + s;
 		}
 		return s;
 	}
 
-	private static String addInBinary(String string, String string2) {
-
-		int i1 = Integer.parseInt(string, 2);
-		int i2 = Integer.parseInt(string2, 2);
-
-		String checksum = Integer.toBinaryString(i1 + i2);
-		// System.out.println("1: " + i1 + " 2: " + i2 + " checksum: " +
-		// checksum);
-
-		System.out.println(checksum);
-		return checksum;
+	public static String ipToHex(String ipAddress) {
 
 		/*
-		 * 4500 -> 0100010100000000 003c -> 0000000000111100 453C ->
-		 * 0100010100111100 /// First result
-		 * 
-		 * 453C -> 0100010100111100 // First result plus next 16-bit word. 1c46
-		 * -> 0001110001000110 6182 -> 0110000110000010 // Second result.
-		 * 
-		 * 6182 -> 0110000110000010 // Second result plus next 16-bit word. 4000
-		 * -> 0100000000000000 A182 -> 1010000110000010 // Third result.
-		 * 
-		 * A182 -> 1010000110000010 // Third result plus next 16-bit word. 4006
-		 * -> 0100000000000110 E188 -> 1110000110001000 // Fourth result. E188
-		 * -> 1110000110001000 // Fourth result plus next 16-bit word. AC10 ->
-		 * 1010110000010000 18D98 -> 11000110110011000 // One odd bit (carry),
-		 * add that odd bit to the result as we need to keep the checksum in 16
-		 * bits.
-		 * 
-		 * 18D98 -> 11000110110011000 8D99 -> 1000110110011001 // Fifth result
-		 * 
-		 * 8D99 -> 1000110110011001 // Fifth result plus next 16-bit word. 0A63
-		 * -> 0000101001100011 97FC -> 1001011111111100 // Sixth result
-		 * 
-		 * 97FC -> 1001011111111100 // Sixth result plus next 16-bit word. AC10
-		 * -> 1010110000010000 1440C -> 10100010000001100 // Again a carry, so
-		 * we add it (as done before)
-		 * 
-		 * 1440C -> 10100010000001100 440D -> 0100010000001101 // This is
-		 * seventh result
-		 * 
-		 * 440D -> 0100010000001101 //Seventh result plus next 16-bit word 0A0C
-		 * -> 0000101000001100 4E19 -> 0100111000011001 // Final result.
+		 * Helper function for converHex. Returns hexadecimal string which is a
+		 * conversion of the given ipAddress (source/destination) of an
+		 * ip4packet.
 		 */
+
+		// Split the given ipAddress into string array.
+		String[] ipAddressInArray = ipAddress.split("\\.");
+
+		// Multiply each element in ipAddressInArray by 256^n where n=3,..0 and
+		// calculate the sum
+		long result = 0;
+		for (int i = 0; i < ipAddressInArray.length; i++) {
+
+			int power = 3 - i;
+			int ip = Integer.parseInt(ipAddressInArray[i]);
+			result += ip * Math.pow(256, power);
+
+		}
+
+		// Convert the calculated sum to hexadecimal
+		String final_hex = BigInteger.valueOf(result).toString(16);
+
+		return final_hex;
+	}
+
+	public static String getSum(ArrayList<String> binList) {
+
+		/*
+		 * Helper function for checksum. Returns a binary string which is the
+		 * sum(with carry) of the given binList.
+		 */
+
+		BigInteger sum = new BigInteger("0");
+		for (int i = 0; i < binList.size(); i++) {
+			sum = sum.add(new BigInteger(binList.get(i), 2));
+
+			// Splits the sum by removing the carry once the sum goes past 16
+			// bits
+			if (sum.toString(2).length() > 16) {
+				// System.out.println("Initial Sum: " + sum.toString(16));
+				String s1 = sum.toString(2).substring(sum.toString(2).length() - 16, sum.toString(2).length());
+				String s2 = sum.toString(2).substring(0, sum.toString(2).length() - 16);
+
+				BigInteger num1 = new BigInteger(s1, 2);
+				BigInteger num2 = new BigInteger(s2, 2);
+				sum = num1.add(num2);
+			}
+
+		}
+		String value = addPadding(sum.toString(2), 16, "0");
+
+		// System.out.println("To hex:" + value);
+		return value;
 
 	}
 
@@ -337,4 +345,17 @@ public class VRouter {
 	 * 
 	 * public static IPaddress lookupDest(IPaddress ipAddress) { return null; }
 	 */
+
+	public static void main(String[] args) {
+		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
+		for (int i = 0; i < ip4Packets.size(); i++) {
+			IP4Packet ip = ip4Packets.get(i);
+			String checksum = checksum(ip);
+			if (ip.getChecksumBin().equals(checksum)){
+				System.out.println(i + ": Checksum passed");
+				
+			}
+		}
+
+	}
 }
