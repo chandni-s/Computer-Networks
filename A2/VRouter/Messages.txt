@@ -11,3 +11,27 @@ Packet 2172 from 234.54.0.0 to 182.250.15.5: Destination not found
 Packet 52167 from 234.72.11.0 to 150.111.0.5: Destination not found
 Packet 52167 from 234.72.11.0 to 150.111.0.5: Destination not found
 Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set
+Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Checksum Error
+Packet 52167 from 234.72.11.0 to 150.111.0.5: Checksum Error

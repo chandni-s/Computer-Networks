@@ -549,10 +549,21 @@ public class VRouter {
 				content = line.split(";"); // escape ;
 
 				int mtus = Integer.parseInt(content[2]);
-				interfaces.put(content[0] + " " + content[1], mtus);
-			}
-			// System.out.println(interfaces.keySet());
 
+				String maskedIp = ipAddressMask(content[0], content[1]);
+				//System.out.println(maskedIp);
+				interfaces.put(maskedIp, mtus);
+
+			}
+			
+			// printing HashMap Keys:Values
+			for (String name: interfaces.keySet()){
+
+	            String key =name;
+	            Integer value = interfaces.get(name);  
+	            System.out.println(key + ":" + value);  
+			} 
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -571,9 +582,26 @@ public class VRouter {
 		}
 	}
 	
-	public String ipAddressMask (String ipAddress, String mask){
+	public static String ipAddressMask (String ipAddress, String mask){
 		
-		return null;
+		String [] ipOctets = ipAddress.split("\\.");
+		//System.out.println(ipOctets);
+		System.out.println(mask);
+		int maskLen = Integer.parseInt(mask);
+		String result = "";
+		for (int i=0; i < ipOctets.length; i++){
+			 result += convertToBinary(ipOctets[i]);	
+		}
+		//System.out.println(result);
+		return result.substring(0, maskLen);
+		
+	}
+	
+	public static String convertToBinary(String input){
+		
+		int b = Integer.parseInt(input);
+		String bin = addPadding(Integer.toBinaryString(b), 8, "0");
+		return bin;
 	}
 
 	public static boolean lookupInterfaces(String ipAddress) {
@@ -604,12 +632,18 @@ public class VRouter {
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
+				String mask = maskToInt(content[1]);
+				String key = ipAddressMask(content[0], mask);
 
-				forwardingTable.put(content[0] + " " + content[1], content[2]
-						+ " " + content[3]);
+				forwardingTable.put(key, content[2] + " " + content[3]);
+
 			}
-			System.out.println(forwardingTable);
-			//
+			for (String name: forwardingTable.keySet()){
+
+	            String key =name;
+	            String value = forwardingTable.get(name);  
+	            System.out.println(key + ":" + value);  
+			} 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -626,6 +660,25 @@ public class VRouter {
 
 		}
 
+	}
+
+	public static String maskToInt (String subnet){
+		String[] subnetOctets = subnet.split("\\.");
+		int count = 0;
+		for (int i = 0; i < subnetOctets.length; i++){
+			if (subnetOctets[i].equals("255")){
+				count +=1;
+			}
+		}
+		if (count == 1){
+			return "4";
+		}
+		else if (count == 2){
+			return "8";
+		}
+		else{
+			return "16";
+		}
 	}
 
 	public static String lookupDest(String ipAddress) {
@@ -649,7 +702,6 @@ public class VRouter {
 				dropPacket (ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
 			}
 			else{
-				
 				if (lookupInterfaces(ip.destAddr)){
 					writeToMessageFile(ip);
 				}
@@ -666,13 +718,13 @@ public class VRouter {
 					
 					System.out.println("fragment now etc");
 					
-					int mtu = Integer.parseInt(interfaces.values().toString());
-					System.out.println("MTU FROM INTERFACES MAP: " + mtu);
-					
-					// If MTU is less than the packet size, fragments the packet
-					if (ip.totalLen > mtu) {
-						fragment(ip, mtu);
-					}
+
+//					System.out.println("MTU FROM INTERFACES MAP: " + mtu);
+//					
+//					// If MTU is less than the packet size, fragments the packet
+//					if (ip.totalLen > i) {
+//						fragment(ip, mtu);
+//					}
 					
 					//forward(ip, interfaces.keySet());
 					
