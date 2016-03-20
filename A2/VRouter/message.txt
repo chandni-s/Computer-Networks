@@ -1,2 +1,0 @@
-
-Packet 2172 from 234.54.0.0 to 182.250.15.5: Fragmentation needed and DF set 
