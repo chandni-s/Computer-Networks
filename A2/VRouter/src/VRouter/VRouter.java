@@ -491,11 +491,18 @@ public class VRouter {
 				content = line.split(";"); // escape ;
 
 				int mtus = Integer.parseInt(content[2]);
-				interfaces.put(content[0] + " " + content[1], mtus);
+				String maskedIp = ipAddressMask(content[0], content[1]);
+				//System.out.println(maskedIp);
+				interfaces.put(maskedIp, mtus);
 
 			}
-			System.out.println(interfaces.keySet());
+			for (String name: interfaces.keySet()){
 
+	            String key =name;
+	            Integer value = interfaces.get(name);  
+	            System.out.println(key + ":" + value);  
+			} 
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -514,9 +521,25 @@ public class VRouter {
 		}
 	}
 	
-	public String ipAddressMask (String ipAddress, String mask){
+	public static String ipAddressMask (String ipAddress, String mask){
 		
-		return null;
+		String [] ipOctets = ipAddress.split("\\.");
+		//System.out.println(ipOctets);
+		int maskLen = Integer.parseInt(mask);
+		String result = "";
+		for (int i=0; i < ipOctets.length; i++){
+			 result += convertToBinary(ipOctets[i]);	
+		}
+		//System.out.println(result);
+		return result.substring(0, maskLen);
+		
+	}
+	
+	public static String convertToBinary(String input){
+		
+		int b = Integer.parseInt(input);
+		String bin = addPadding(Integer.toBinaryString(b), 8, "0");
+		return bin;
 	}
 
 	public static boolean lookupInterfaces(String ipAddress) {
@@ -547,11 +570,17 @@ public class VRouter {
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
+				String mask = maskToInt(content[1]);
+				String key = ipAddressMask(content[0], mask);
 
-				forwardingTable.put(content[0] + " " + content[1], content[2] + " " + content[3]);
+				forwardingTable.put(key, content[2] + " " + content[3]);
 			}
-			System.out.println(forwardingTable);
-			//
+			for (String name: forwardingTable.keySet()){
+
+	            String key =name;
+	            String value = forwardingTable.get(name);  
+	            System.out.println(key + ":" + value);  
+			} 
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -569,19 +598,27 @@ public class VRouter {
 		}
 
 	}
-
-	public static void convertStringToBinary() {
-		String[] sample = interfaces.keySet().toString().replaceAll("\\[", "").replaceAll("\\]", "").split(" ");
-		for (int i = 0; i < sample.length; i++) {
-			// System.out.println(sample[i].replaceAll("\\,", ""));
-
-			// results[i] = Integer.parseInt(sample[0].trim());
-			String numberAsString = sample[0].trim();
-			System.out.println(numberAsString);
+	
+	public static String maskToInt (String subnet){
+		String[] subnetOctets = subnet.split("\\.");
+		int count = 0;
+		for (int i = 0; i < subnetOctets.length; i++){
+			if (subnetOctets[i].equals("255")){
+				count +=1;
+			}
 		}
-
+		if (count == 1){
+			return "4";
+		}
+		else if (count == 2){
+			return "8";
+		}
+		else{
+			return "16";
+		}
 	}
-
+	
+	
 	public static String lookupDest(String ipAddress) {
 		return null;
 	}
@@ -593,6 +630,8 @@ public class VRouter {
 		// convertStringToBinary();
 
 		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
+		readInterfaces();
+		readFowardingTable();
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
 			String checksum = checksum(ip);
@@ -600,7 +639,6 @@ public class VRouter {
 				dropPacket (ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
 			}
 			else{
-				readInterfaces();
 				if (lookupInterfaces(ip.destAddr)){
 					System.out.println("Write to Message.txt");
 				}
