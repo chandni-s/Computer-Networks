@@ -573,6 +573,11 @@ public class VRouter {
 
 		}
 	}
+	
+	public String ipAddressMask (String ipAddress, String mask){
+		
+		return null;
+	}
 
 	public static boolean lookupInterfaces(String ipAddress) {
 		if (interfaces.containsKey(ipAddress)) {
@@ -640,9 +645,15 @@ public class VRouter {
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
 			String checksum = checksum(ip);
-			if (ip.getChecksumBin().equals(checksum)) {
-				System.out.println(i + ": Checksum passed");
-
+			if (!ip.getChecksumBin().equals(checksum)) {
+				dropPacket (ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
+			}
+			else{
+				readInterfaces();
+				if (lookupInterfaces(ip.destAddr)){
+					System.out.println("Write to Message.txt");
+				}
+			
 			}
 		}
 	}
