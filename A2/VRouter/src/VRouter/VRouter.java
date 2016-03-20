@@ -187,8 +187,6 @@ public class VRouter {
 		// checksum(ip);
 		// readInterfaces();
 
-		fragment(ip, 300);
-
 		return ip;
 
 	}
@@ -381,7 +379,7 @@ public class VRouter {
 		if (bits[1] == '1') {
 			System.out.println("DF Field set!");
 			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id,
-					"Fragmentation needed and DF set \n");
+					"Fragmentation needed and DF set");
 			return fragments;
 		}
 
@@ -496,10 +494,11 @@ public class VRouter {
 
 			msgFile = new File(fileName);
 
-			msgout = new FileWriter(msgFile, true);
+			msgout = new FileWriter(msgFile, true); // remove append 
 			bufMsg = new BufferedWriter(msgout);
 
-			bufMsg.write(input);
+			bufMsg.write("");
+			bufMsg.write(input+"\n");
 			bufMsg.flush();
 
 			return true;
@@ -522,10 +521,8 @@ public class VRouter {
 
 	}
 
-	/*
-	 * public static boolean forward(IP4Packet ip4packet, IPaddress interface) {
-	 * return false; }
-	 */
+	
+	 
 
 	/*
 	 * 
@@ -632,7 +629,7 @@ public class VRouter {
 	}
 
 	public static String lookupDest(String ipAddress) {
-		return null;
+		return "";
 	}
 
 	public static void main(String[] args) {
@@ -642,16 +639,47 @@ public class VRouter {
 		// convertStringToBinary();
 
 		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
+		readInterfaces();
+		readFowardingTable();
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
 			String checksum = checksum(ip);
+
 			if (!ip.getChecksumBin().equals(checksum)) {
 				dropPacket (ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
 			}
 			else{
-				readInterfaces();
+				
 				if (lookupInterfaces(ip.destAddr)){
-					System.out.println("Write to Message.txt");
+					writeToMessageFile(ip);
+				}
+				
+				else if (lookupDest(ip.destAddr) != null) {
+					
+					// decrement TTL
+					ip.ttl = ip.ttl - 1;
+					System.out.println("TTL is " + ip.ttl);
+					if (ip.ttl <= 0) {
+						
+						dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "TTL exceeded");
+					}
+					
+					System.out.println("fragment now etc");
+					
+					int mtu = Integer.parseInt(interfaces.values().toString());
+					System.out.println("MTU FROM INTERFACES MAP: " + mtu);
+					
+					// If MTU is less than the packet size, fragments the packet
+					if (ip.totalLen > mtu) {
+						fragment(ip, mtu);
+					}
+					
+					//forward(ip, interfaces.keySet());
+					
+				}
+				
+				else {
+					dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Destination not found");
 				}
 			
 			}
