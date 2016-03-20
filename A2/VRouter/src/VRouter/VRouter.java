@@ -351,18 +351,6 @@ public class VRouter {
 
 	}
 
-	private static String addInBinary(String string, String string2) {
-
-		int i1 = Integer.parseInt(string, 2);
-		int i2 = Integer.parseInt(string2, 2);
-
-		String checksum = Integer.toBinaryString(i1 + i2);
-		System.out.println("1: " + i1 + " 2: " + i2 + " checksum: " + checksum);
-
-		return checksum;
-
-	}
-
 	public static List<IP4Packet> fragment(IP4Packet ip4packet, int MTU) {
 
 		List<IP4Packet> fragments = new ArrayList<IP4Packet>();
@@ -525,6 +513,11 @@ public class VRouter {
 
 		}
 	}
+	
+	public String ipAddressMask (String ipAddress, String mask){
+		
+		return null;
+	}
 
 	public static boolean lookupInterfaces(String ipAddress) {
 		if (interfaces.containsKey(ipAddress)) {
@@ -603,9 +596,15 @@ public class VRouter {
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
 			String checksum = checksum(ip);
-			if (ip.getChecksumBin().equals(checksum)) {
-				System.out.println(i + ": Checksum passed");
-
+			if (!ip.getChecksumBin().equals(checksum)) {
+				dropPacket (ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
+			}
+			else{
+				readInterfaces();
+				if (lookupInterfaces(ip.destAddr)){
+					System.out.println("Write to Message.txt");
+				}
+			
 			}
 		}
 	}
