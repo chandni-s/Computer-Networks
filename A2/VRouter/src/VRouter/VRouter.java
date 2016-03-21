@@ -494,11 +494,11 @@ public class VRouter {
 
 			msgFile = new File(fileName);
 
-			msgout = new FileWriter(msgFile, true); // remove append 
+			msgout = new FileWriter(msgFile, true); // remove append
 			bufMsg = new BufferedWriter(msgout);
 
 			bufMsg.write("");
-			bufMsg.write(input+"\n");
+			bufMsg.write(input + "\n");
 			bufMsg.flush();
 
 			return true;
@@ -520,9 +520,6 @@ public class VRouter {
 		}
 
 	}
-
-	
-	 
 
 	/*
 	 * 
@@ -551,19 +548,19 @@ public class VRouter {
 				int mtus = Integer.parseInt(content[2]);
 
 				String maskedIp = ipAddressMask(content[0], content[1]);
-				//System.out.println(maskedIp);
+				// System.out.println(maskedIp);
 				interfaces.put(maskedIp, mtus);
 
 			}
-			
-			// printing HashMap Keys:Values
-			for (String name: interfaces.keySet()){
 
-	            String key =name;
-	            Integer value = interfaces.get(name);  
-	            System.out.println(key + ":" + value);  
-			} 
-			
+			// printing HashMap Keys:Values
+			for (String name : interfaces.keySet()) {
+
+				String key = name;
+				Integer value = interfaces.get(name);
+				// System.out.println(key + ":" + value);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -581,24 +578,24 @@ public class VRouter {
 
 		}
 	}
-	
-	public static String ipAddressMask (String ipAddress, String mask){
-		
-		String [] ipOctets = ipAddress.split("\\.");
-		//System.out.println(ipOctets);
-		System.out.println(mask);
+
+	public static String ipAddressMask(String ipAddress, String mask) {
+
+		String[] ipOctets = ipAddress.split("\\.");
+		// System.out.println(ipOctets);
+		// System.out.println(mask);
 		int maskLen = Integer.parseInt(mask);
 		String result = "";
-		for (int i=0; i < ipOctets.length; i++){
-			 result += convertToBinary(ipOctets[i]);	
+		for (int i = 0; i < ipOctets.length; i++) {
+			result += convertToBinary(ipOctets[i]);
 		}
-		//System.out.println(result);
+		// System.out.println(result);
 		return result.substring(0, maskLen);
-		
+
 	}
-	
-	public static String convertToBinary(String input){
-		
+
+	public static String convertToBinary(String input) {
+
 		int b = Integer.parseInt(input);
 		String bin = addPadding(Integer.toBinaryString(b), 8, "0");
 		return bin;
@@ -612,10 +609,6 @@ public class VRouter {
 		return false;
 
 	}
-
-	// mask with ipAddress pass and get the ipAddress in fwd table [0]
-	// longest prefix is: 192.0.1.3; 255.255.255.0 and them =
-	// hashmap: and [0] & [1] , [2] & [3], [1] separately - split by ;
 
 	public static void readFowardingTable() {
 
@@ -638,12 +631,12 @@ public class VRouter {
 				forwardingTable.put(key, content[2] + " " + content[3]);
 
 			}
-			for (String name: forwardingTable.keySet()){
+			for (String name : forwardingTable.keySet()) {
 
-	            String key =name;
-	            String value = forwardingTable.get(name);  
-	            System.out.println(key + ":" + value);  
-			} 
+				String key = name;
+				String value = forwardingTable.get(name);
+				System.out.println(key + " : " + value);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
@@ -662,78 +655,92 @@ public class VRouter {
 
 	}
 
-	public static String maskToInt (String subnet){
+	public static String maskToInt(String subnet) {
 		String[] subnetOctets = subnet.split("\\.");
 		int count = 0;
-		for (int i = 0; i < subnetOctets.length; i++){
-			if (subnetOctets[i].equals("255")){
-				count +=1;
+		for (int i = 0; i < subnetOctets.length; i++) {
+			if (subnetOctets[i].equals("255")) {
+				count += 1;
 			}
 		}
-		if (count == 1){
+
+		// handling Class-A
+		if (count == 1) {
 			return "4";
 		}
-		else if (count == 2){
+
+		// handling Class-B
+		else if (count == 2) {
 			return "8";
 		}
-		else{
+
+		// handling Class-C
+		else {
 			return "16";
 		}
 	}
 
 	public static String lookupDest(String ipAddress) {
-		return "";
+
+		// if ipAddress is converted to 16,24 or 32bits, it doesn't match (182.250._._ should match if its class-B)
+		// when destination is passed from main - how do you determine if its class-B or A or C? 
+
+		String destAddrInBinary = ipAddressMask(ipAddress, "8"); 
+
+		if (forwardingTable.containsKey(destAddrInBinary)) {
+			System.out.println("FOUND IT \n\n Key in fwd-Table: "
+					+ forwardingTable.keySet() + " DestAddress matching: "
+					+ ipAddress + " " + destAddrInBinary);
+
+		}
+
+		return destAddrInBinary;
 	}
 
 	public static void main(String[] args) {
-		// readInterfaces();
-		// lookupInterfaces("191.168.0.0");
-		// readFowardingTable();
-		// convertStringToBinary();
 
 		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
 		readInterfaces();
 		readFowardingTable();
+
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
 			String checksum = checksum(ip);
 
 			if (!ip.getChecksumBin().equals(checksum)) {
-				dropPacket (ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
-			}
-			else{
-				if (lookupInterfaces(ip.destAddr)){
+				dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
+			} else {
+				if (lookupInterfaces(ip.destAddr)) {
 					writeToMessageFile(ip);
 				}
-				
+
 				else if (lookupDest(ip.destAddr) != null) {
-					
+
 					// decrement TTL
 					ip.ttl = ip.ttl - 1;
-					System.out.println("TTL is " + ip.ttl);
 					if (ip.ttl <= 0) {
-						
-						dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "TTL exceeded");
-					}
-					
-					System.out.println("fragment now etc");
-					
 
-//					System.out.println("MTU FROM INTERFACES MAP: " + mtu);
-//					
-//					// If MTU is less than the packet size, fragments the packet
-//					if (ip.totalLen > i) {
-//						fragment(ip, mtu);
-//					}
-					
-					//forward(ip, interfaces.keySet());
-					
+						dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
+								"TTL exceeded");
+					}
+
+					// System.out.println("MTU FROM INTERFACES MAP: " + mtu);
+					//
+					// // If MTU is less than the packet size, fragments the
+					// packet
+					// if (ip.totalLen > i) {
+					// fragment(ip, mtu);
+					// }
+
+					// forward(ip, interfaces.keySet());
+
 				}
-				
+
 				else {
-					dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Destination not found");
+					dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
+							"Destination not found");
 				}
-			
+
 			}
 		}
 	}
