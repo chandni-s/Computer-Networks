@@ -666,17 +666,17 @@ public class VRouter {
 
 		// handling Class-A
 		if (count == 1) {
-			return "4";
+			return "8";
 		}
 
 		// handling Class-B
 		else if (count == 2) {
-			return "8";
+			return "16";
 		}
 
 		// handling Class-C
 		else {
-			return "16";
+			return "24";
 		}
 	}
 
@@ -687,12 +687,22 @@ public class VRouter {
 
 		String destAddrInBinary = ipAddressMask(ipAddress, "8"); 
 
-		if (forwardingTable.containsKey(destAddrInBinary)) {
-			System.out.println("FOUND IT \n\n Key in fwd-Table: "
-					+ forwardingTable.keySet() + " DestAddress matching: "
-					+ ipAddress + " " + destAddrInBinary);
-
+		for (String key : forwardingTable.keySet()) {
+			
+//			if (forwardingTable.containsKey(destAddrInBinary)) {
+//				System.out.println("FOUND IT \n\n Key in fwd-Table: "
+//						+ forwardingTable.keySet() + " DestAddress matching: "
+//						+ ipAddress + " " + destAddrInBinary);
+//
+//			}
+			
+			System.out.println(key);
+			
+			if (key.equals(destAddrInBinary)) {
+				System.out.println("Found a match! " + ipAddress + " " + destAddrInBinary);
+			}
 		}
+		
 
 		return destAddrInBinary;
 	}
