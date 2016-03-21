@@ -558,7 +558,7 @@ public class VRouter {
 
 				String key = name;
 				Integer value = interfaces.get(name);
-				// System.out.println(key + ":" + value);
+				//System.out.println("Interfaces Keys= "+key + ": Interfaces value= " + value);
 			}
 
 		} catch (Exception e) {
@@ -635,7 +635,7 @@ public class VRouter {
 
 				String key = name;
 				String value = forwardingTable.get(name);
-				System.out.println(key + " : " + value);
+				//System.out.println(key + " : " + value);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -682,29 +682,25 @@ public class VRouter {
 
 	public static String lookupDest(String ipAddress) {
 
-		// if ipAddress is converted to 16,24 or 32bits, it doesn't match (182.250._._ should match if its class-B)
-		// when destination is passed from main - how do you determine if its class-B or A or C? 
-
-		String destAddrInBinary = ipAddressMask(ipAddress, "8"); 
+		String matchedInterfaceIP = null;
 
 		for (String key : forwardingTable.keySet()) {
 			
-//			if (forwardingTable.containsKey(destAddrInBinary)) {
-//				System.out.println("FOUND IT \n\n Key in fwd-Table: "
-//						+ forwardingTable.keySet() + " DestAddress matching: "
-//						+ ipAddress + " " + destAddrInBinary);
-//
-//			}
+			// Longest prefix length: if IPAdd in FwdTable is class-A: length=8, B=16, C=24
+			String length = Integer.toString(key.length());
 			
-			System.out.println(key);
+			// convert destinationIPAddress to binary only up to longest prefix length
+			String destAddrInBinary = ipAddressMask(ipAddress, length);
 			
+			// match the longest prefixed length destinationIP with keys in FWD HashMap
 			if (key.equals(destAddrInBinary)) {
-				System.out.println("Found a match! " + ipAddress + " " + destAddrInBinary);
+				//System.out.println("Found a match! " + ipAddress + " " + destAddrInBinary);
+				//System.out.println(key + " === " + forwardingTable.get(key));
+				matchedInterfaceIP = forwardingTable.get(key);
 			}
 		}
 		
-
-		return destAddrInBinary;
+		return matchedInterfaceIP;
 	}
 
 	public static void main(String[] args) {
@@ -724,7 +720,8 @@ public class VRouter {
 					writeToMessageFile(ip);
 				}
 
-				else if (lookupDest(ip.destAddr) != null) {
+				String interfaceIP = lookupDest(ip.destAddr);
+				if (interfaceIP != null) {
 
 					// decrement TTL
 					ip.ttl = ip.ttl - 1;
@@ -734,15 +731,17 @@ public class VRouter {
 								"TTL exceeded");
 					}
 
-					// System.out.println("MTU FROM INTERFACES MAP: " + mtu);
-					//
-					// // If MTU is less than the packet size, fragments the
-					// packet
-					// if (ip.totalLen > i) {
-					// fragment(ip, mtu);
-					// }
+					// need to convert values of Forward HashMap 
+					// to same type as keys in Interfaces HashMap
+					String[] matchInterfaceIP = interfaceIP.split(" ");
+					
+					// convert the IPAddress and IntMask to binary so we can match 
+					// in interfaces HashMap to get MTU
+					String ipForFragmenting = ipAddressMask(matchInterfaceIP[0], maskToInt(matchInterfaceIP[1]));
+					System.out.println("From LookUpDestination: "+interfaceIP + " -> " + ipForFragmenting 
+							+ " \nFrom Interfaces HashMap " + matchInterfaceIP[0] + " = " + interfaces.get(ipForFragmenting));
 
-					// forward(ip, interfaces.keySet());
+					fragment(ip, interfaces.get(ipForFragmenting));
 
 				}
 
