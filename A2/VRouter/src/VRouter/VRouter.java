@@ -694,6 +694,8 @@ public class VRouter {
 		}
 		String[] interfaceIp = matchedInterfaceIP.split(";");
 		// System.out.println(interfaceIp[0]);
+		
+		// return matchedInterfaceIP; for fragmentation
 		return interfaceIp[0];
 	}
 
@@ -791,13 +793,16 @@ public class VRouter {
 					continue;
 				}
 
-				checkTTL(ip);
+				//checkTTL(ip);
 
 				String interfaceIP = lookupDest(ip.destAddr);
 				System.out.println("Longest Match interface: " + interfaceIP);
 				if (interfaceIP != null) {
 
-					// fragment(ip, MTU);
+					// interfaceIP is: 190.120.0.0;255.255.0.0 
+						// 1. split interfaceIP by ; and pass [0] to forward
+						// 2. convert interfaceIP[1] from 255.255.0.0 to 16 - pass value MTU to fragment
+					//fragment(ip, interfaces.get(interfaceIP));
 
 					forward(ip, interfaceIP);
 					continue;
