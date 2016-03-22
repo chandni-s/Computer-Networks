@@ -606,8 +606,8 @@ public class VRouter {
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
-				String mask = maskToInt(content[1]);
-				String key = ipAddressMask(content[0], mask);
+				//String mask = maskToInt(content[1]);
+				String key = ipAddressMask(content[0], content[1]);
 
 				forwardingTable.put(key, content[2] + ";" + content[3]);
 
@@ -636,7 +636,7 @@ public class VRouter {
 
 	}
 
-	public static String maskToInt(String subnet) {
+	/*public static String maskToInt(String subnet) {
 		String[] subnetOctets = subnet.split("\\.");
 		int count = 0;
 		for (int i = 0; i < subnetOctets.length; i++) {
@@ -659,7 +659,7 @@ public class VRouter {
 		else {
 			return "24";
 		}
-	}
+	}*/
 
 	public static String lookupDest(String ipAddress) {
 
@@ -727,6 +727,19 @@ public class VRouter {
 		
 		return writeToFile("OutPackets.txt", writeToOutPacket);
 		
+	}
+	
+	public static Integer getMTU (String interfaceIp){
+		Integer mtu = null;
+		for (String key : interfaces.keySet()) {
+			String[] ipAndMask = key.split(";");
+			if (interfaceIp.equals(ipAndMask[0])) {
+				// System.out.println(ipAndMask[0]);
+				mtu = interfaces.get(key);
+			}
+		}
+		
+		return mtu;
 	}
 
 	public static void main(String[] args) {
