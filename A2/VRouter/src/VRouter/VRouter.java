@@ -709,30 +709,31 @@ public class VRouter {
 	/*
 	 * Forward the packet to its destination and write it to OutPackets.txt
 	 */
-
+	
 	public static boolean forward(IP4Packet ip4packet, String interfaceIP) {
-
-		String checksum = checksum(ip4packet);
+		
+		String checksum = checksum(ip4packet); 
 		char[] checksumBits = String.valueOf(checksum).toCharArray();
 
-		// need to format the checksum
-
+		// need to format the checksum 
+		
 		ip4packet.checksum = checksum;
-
-		String writeToOutPacket = ip4packet.version + "; " + ip4packet.ihl + "; " + ip4packet.tos + "; "
-				+ ip4packet.totalLen + "\n" + ip4packet.id + "; " + ip4packet.flags + "; " + ip4packet.fragOffset + "\n"
-				+ ip4packet.ttl + "; " + ip4packet.protocol + "; " + ip4packet.checksum + "\n" + ip4packet.sourceAddr
-				+ "\n" + ip4packet.destAddr + "\n" + interfaceIP + "\n";
-
+		
+		String writeToOutPacket = ip4packet.version + "; " + ip4packet.ihl + "; " 
+				+ ip4packet.tos + "; " + ip4packet.totalLen + "\n" 
+				+ ip4packet.id + "; " + ip4packet.flags + "; " + ip4packet.fragOffset + "\n" 
+				+ ip4packet.ttl + "; " + ip4packet.protocol + "; " + ip4packet.checksum + "\n"
+				+ ip4packet.sourceAddr + "\n" + ip4packet.destAddr + "\n" + interfaceIP + "\n";
+		
 		return writeToFile("OutPackets.txt", writeToOutPacket);
-
+		
 	}
 
 	public static void main(String[] args) {
 
 		// Clears log files if it already exists
 		clearLogFile("Messages.txt");
-		clearLogFile("Output.txt");
+		clearLogFile("OutPackets.txt");
 
 		// Parses InPackets.txt and adds packet to a list
 		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
@@ -771,8 +772,9 @@ public class VRouter {
 
 					// Forward packets
 					// forward(packets, interface);
-
+					forward(ip, interfaceIP); 
 					continue;
+					
 				}
 
 				else {
