@@ -707,6 +707,32 @@ public class VRouter {
 		
 		return matchedInterfaceIP;
 	}
+	
+	/*
+	 * Forward the packet to its destination and write it to OutPackets.txt
+	 */
+	
+	public static boolean forward(IP4Packet ip4packet, String interfaceIP) {
+		
+		String checksum = checksum(ip4packet); 
+		char[] checksumBits = String.valueOf(checksum).toCharArray();
+
+		// need to format the checksum 
+		
+		ip4packet.checksum = checksum;
+		
+		String writeToOutPacket = ip4packet.version + "; " + ip4packet.ihl + "; " 
+				+ ip4packet.tos + "; " + ip4packet.totalLen + "\n" 
+				+ ip4packet.id + "; " + ip4packet.flags + "; " + ip4packet.fragOffset + "\n" 
+				+ ip4packet.ttl + "; " + ip4packet.protocol + "; " + ip4packet.checksum + "\n"
+				+ ip4packet.sourceAddr + "\n" + ip4packet.destAddr + "\n" + interfaceIP + "\n";
+		
+		writeToFile("OutPackets.txt", writeToOutPacket);
+
+		
+		return false;
+		
+	}
 
 	public static void main(String[] args) {
 
@@ -748,6 +774,7 @@ public class VRouter {
 //
 //					fragment(ip, interfaces.get(ipForFragmenting));
 
+					forward(ip,  interfaceIP); 
 				}
 
 				else {
