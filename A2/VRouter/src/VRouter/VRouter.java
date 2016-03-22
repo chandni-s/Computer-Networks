@@ -727,10 +727,7 @@ public class VRouter {
 				+ ip4packet.ttl + "; " + ip4packet.protocol + "; " + ip4packet.checksum + "\n"
 				+ ip4packet.sourceAddr + "\n" + ip4packet.destAddr + "\n" + interfaceIP + "\n";
 		
-		writeToFile("OutPackets.txt", writeToOutPacket);
-
-		
-		return false;
+		return writeToFile("OutPackets.txt", writeToOutPacket);
 		
 	}
 
