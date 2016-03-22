@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,9 +31,8 @@ public class VRouter {
 		String sourceAddr;
 		String destAddr;
 
-		public IP4Packet(int version, int ihl, int tos, int totalLen, int id,
-				String flags, int fragOffset, int ttl, int protocol,
-				String checksum, String sourceAddr, String destAddr) {
+		public IP4Packet(int version, int ihl, int tos, int totalLen, int id, String flags, int fragOffset, int ttl,
+				int protocol, String checksum, String sourceAddr, String destAddr) {
 
 			this.version = version;
 			this.ihl = ihl;
@@ -162,12 +162,9 @@ public class VRouter {
 
 		VRouter vr = new VRouter();
 
-		ip = vr.new IP4Packet(Integer.parseInt(chars[0]),
-				Integer.parseInt(chars[1]), Integer.parseInt(chars[2]),
-				Integer.parseInt(chars[3]), Integer.parseInt(chars[4]),
-				chars[5], Integer.parseInt(chars[6]),
-				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]),
-				chars[9], chars[10], chars[11]);
+		ip = vr.new IP4Packet(Integer.parseInt(chars[0]), Integer.parseInt(chars[1]), Integer.parseInt(chars[2]),
+				Integer.parseInt(chars[3]), Integer.parseInt(chars[4]), chars[5], Integer.parseInt(chars[6]),
+				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]), chars[9], chars[10], chars[11]);
 
 		// Inet4Address srcAddr = null, destAddr = null;
 		//
@@ -246,14 +243,12 @@ public class VRouter {
 		hex1 += addPadding(Integer.toHexString(ip4packet.ihl), 1, "0");
 		hex1 += addPadding(Integer.toHexString(ip4packet.tos), 2, "0");
 
-		String hex2 = addPadding(Integer.toHexString(ip4packet.totalLen), 4,
-				"0");
+		String hex2 = addPadding(Integer.toHexString(ip4packet.totalLen), 4, "0");
 
 		String hex3 = addPadding(Integer.toHexString(ip4packet.id), 4, "0");
 
 		String b1 = addPadding(ip4packet.flags, 3, "0");
-		String b2 = addPadding(Integer.toBinaryString(ip4packet.fragOffset),
-				13, "0");
+		String b2 = addPadding(Integer.toBinaryString(ip4packet.fragOffset), 13, "0");
 		String bFinal = b1 + b2;
 		String hex4 = Integer.toHexString(Integer.parseInt(bFinal, 2));
 
@@ -341,11 +336,8 @@ public class VRouter {
 			// bits
 			if (sum.toString(2).length() > 16) {
 				// System.out.println("Initial Sum: " + sum.toString(16));
-				String s1 = sum.toString(2)
-						.substring(sum.toString(2).length() - 16,
-								sum.toString(2).length());
-				String s2 = sum.toString(2).substring(0,
-						sum.toString(2).length() - 16);
+				String s1 = sum.toString(2).substring(sum.toString(2).length() - 16, sum.toString(2).length());
+				String s2 = sum.toString(2).substring(0, sum.toString(2).length() - 16);
 
 				BigInteger num1 = new BigInteger(s1, 2);
 				BigInteger num2 = new BigInteger(s2, 2);
@@ -367,9 +359,7 @@ public class VRouter {
 		// If MTU is at least as great as the size of ip4packet,
 		// return ip4packet as is since no fragmentation is needed
 		if (ip4packet.totalLen < MTU) {
-			System.out
-					.println("Size of packet is < MTU, no fragmentation needed: "
-							+ ip4packet.totalLen);
+			System.out.println("Size of packet is < MTU, no fragmentation needed: " + ip4packet.totalLen);
 			fragments.add(ip4packet);
 			return fragments;
 		}
@@ -378,8 +368,7 @@ public class VRouter {
 		char[] bits = String.valueOf(ip4packet.flags).toCharArray();
 		if (bits[1] == '1') {
 			System.out.println("DF Field set!");
-			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id,
-					"Fragmentation needed and DF set");
+			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id, "Fragmentation needed and DF set");
 			return fragments;
 		}
 
@@ -387,8 +376,7 @@ public class VRouter {
 		VRouter vr = new VRouter();
 
 		// Get number of fragments needed for the packet
-		double numOfFragments = Math.ceil((float) (ip4packet.totalLen - 20)
-				/ (MTU - 20));
+		double numOfFragments = Math.ceil((float) (ip4packet.totalLen - 20) / (MTU - 20));
 
 		// convert number of fragment to interger
 		int packetNumber = (int) numOfFragments;
@@ -402,16 +390,13 @@ public class VRouter {
 
 		while (sizeOfEachPacket < ip4packet.totalLen) {
 
-			System.out.println("count " + count + "   packetNumber: "
-					+ packetNumber);
+			System.out.println("count " + count + "   packetNumber: " + packetNumber);
 
 			// generate a new IP4Packet with new size
 			if (count < packetNumber) {
 
-				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
-						ip4packet.tos, MTU - 20, ip4packet.id, ip4packet.flags,
-						0, ip4packet.ttl, ip4packet.protocol,
-						ip4packet.checksum, ip4packet.sourceAddr,
+				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl, ip4packet.tos, MTU - 20, ip4packet.id,
+						ip4packet.flags, 0, ip4packet.ttl, ip4packet.protocol, ip4packet.checksum, ip4packet.sourceAddr,
 						ip4packet.destAddr);
 
 				// if its first packet, set the offset to 0
@@ -431,15 +416,12 @@ public class VRouter {
 			else {
 
 				// Calculate the size of last fragmented packet
-				int sizeOfLastPacket = ip4packet.totalLen
-						- ((MTU - 20) * (packetNumber - 1));
+				int sizeOfLastPacket = ip4packet.totalLen - ((MTU - 20) * (packetNumber - 1));
 
 				// set the flag of last fragmented packet to 000
-				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
-						ip4packet.tos, sizeOfLastPacket, ip4packet.id, "000",
-						offset * (count - 1), ip4packet.ttl - 1,
-						ip4packet.protocol, ip4packet.checksum,
-						ip4packet.sourceAddr, ip4packet.destAddr);
+				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl, ip4packet.tos, sizeOfLastPacket,
+						ip4packet.id, "000", offset * (count - 1), ip4packet.ttl - 1, ip4packet.protocol,
+						ip4packet.checksum, ip4packet.sourceAddr, ip4packet.destAddr);
 
 			}
 
@@ -452,8 +434,7 @@ public class VRouter {
 
 		// Testing purposes
 		for (int i = 0; i < fragments.size(); i++) {
-			System.out.println(fragments.get(i).flags + "---"
-					+ fragments.get(i).totalLen + "......."
+			System.out.println(fragments.get(i).flags + "---" + fragments.get(i).totalLen + "......."
 					+ fragments.get(i).fragOffset);
 		}
 
@@ -461,11 +442,9 @@ public class VRouter {
 
 	}
 
-	public static boolean dropPacket(String sourceAddr, String destAddr,
-			int ID, String message) {
+	public static boolean dropPacket(String sourceAddr, String destAddr, int ID, String message) {
 
-		String errMsg = "Packet " + ID + " from " + sourceAddr + " to "
-				+ destAddr + ": " + message;
+		String errMsg = "Packet " + ID + " from " + sourceAddr + " to " + destAddr + ": " + message;
 
 		if (writeToFile("Messages.txt", errMsg)) {
 			return true;
@@ -475,8 +454,7 @@ public class VRouter {
 
 	public static boolean writeToMessageFile(IP4Packet ip) {
 
-		String msg = "Packet from " + ip.sourceAddr
-				+ "destined for this router successfully received: " + ip.id;
+		String msg = "Packet from " + ip.sourceAddr + " destined for this router successfully received: " + ip.id;
 		if (writeToFile("Messages.txt", msg)) {
 			return true;
 		}
@@ -547,7 +525,7 @@ public class VRouter {
 
 				int mtus = Integer.parseInt(content[2]);
 
-				//String maskedIp = ipAddressMask(content[0], content[1]);
+				// String maskedIp = ipAddressMask(content[0], content[1]);
 				// System.out.println(maskedIp);
 				interfaces.put(content[0] + ";" + content[1], mtus);
 
@@ -558,7 +536,7 @@ public class VRouter {
 
 				String key = name;
 				Integer value = interfaces.get(name);
-				System.out.println("Interfaces Keys= "+key + ": Interfaces value= " + value);
+				System.out.println("Interfaces Keys= " + key + ": Interfaces value= " + value);
 			}
 
 		} catch (Exception e) {
@@ -602,9 +580,12 @@ public class VRouter {
 	}
 
 	public static boolean lookupInterfaces(String ipAddress) {
-		if (interfaces.containsKey(ipAddress)) {
-			System.out.println("FOUND IT!");
-			return true;
+		for (String key : interfaces.keySet()) {
+			String[] ipAndMask = key.split(";");
+			if (ipAddress.equals(ipAndMask[0])) {
+				// System.out.println(ipAndMask[0]);
+				return true;
+			}
 		}
 		return false;
 
@@ -628,14 +609,14 @@ public class VRouter {
 				String mask = maskToInt(content[1]);
 				String key = ipAddressMask(content[0], mask);
 
-				forwardingTable.put(key, content[2] + " " + content[3]);
+				forwardingTable.put(key, content[2] + ";" + content[3]);
 
 			}
 			for (String name : forwardingTable.keySet()) {
 
 				String key = name;
 				String value = forwardingTable.get(name);
-				//System.out.println(key + " : " + value);
+				System.out.println(key + " : " + value);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -686,75 +667,117 @@ public class VRouter {
 		// convert destinationIPAddress to binary only up to longest prefix
 		// length
 		String destAddrInBinary = ipAddressMask(ipAddress, "32");
-		System.out.println(destAddrInBinary);
+		// System.out.println(destAddrInBinary);
 		int longestMatch = 0;
 
 		for (String key : forwardingTable.keySet()) {
 
-			// Longest prefix length: if IPAdd in FwdTable is class-A: length=8,
-			// B=16, C=24
 			int keyLen = key.length();
-			// match the longest prefixed length destinationIP with keys in FWD
-			// HashMap
 			if (key.equals(destAddrInBinary.substring(0, keyLen)) && longestMatch < keyLen) {
-				// System.out.println("Found a match! " + ipAddress + " " +
-				// destAddrInBinary);
-				// System.out.println(key + " === " + forwardingTable.get(key));
 				matchedInterfaceIP = forwardingTable.get(key);
-				System.out.println(key);
+				longestMatch = keyLen;
 			}
 		}
-		
-		return matchedInterfaceIP;
+		String[] interfaceIp = matchedInterfaceIP.split(";");
+		// System.out.println(interfaceIp[0]);
+		return interfaceIp[0];
+	}
+
+	public static void clearLogFile(String fileName) {
+		File file = new File(fileName);
+		if (file.exists()) {
+			try {
+				FileWriter fw = new FileWriter(file.getAbsolutePath());
+				PrintWriter pw = new PrintWriter(fw);
+				pw.write("");
+				pw.flush();
+				pw.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		else{
+			try {
+				file.createNewFile();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/*
+	 * Forward the packet to its destination and write it to OutPackets.txt
+	 */
+
+	public static boolean forward(IP4Packet ip4packet, String interfaceIP) {
+
+		String checksum = checksum(ip4packet);
+		char[] checksumBits = String.valueOf(checksum).toCharArray();
+
+		// need to format the checksum
+
+		ip4packet.checksum = checksum;
+
+		String writeToOutPacket = ip4packet.version + "; " + ip4packet.ihl + "; " + ip4packet.tos + "; "
+				+ ip4packet.totalLen + "\n" + ip4packet.id + "; " + ip4packet.flags + "; " + ip4packet.fragOffset + "\n"
+				+ ip4packet.ttl + "; " + ip4packet.protocol + "; " + ip4packet.checksum + "\n" + ip4packet.sourceAddr
+				+ "\n" + ip4packet.destAddr + "\n" + interfaceIP + "\n";
+
+		return writeToFile("OutPackets.txt", writeToOutPacket);
+
 	}
 
 	public static void main(String[] args) {
 
+		// Clears log files if it already exists
+		clearLogFile("Messages.txt");
+		clearLogFile("Output.txt");
+
+		// Parses InPackets.txt and adds packet to a list
 		List<IP4Packet> ip4Packets = incomingPackets("InPackets.txt");
+
 		readInterfaces();
 		readFowardingTable();
+		System.out.println("#of Packets :" + ip4Packets.size());
 
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
+			System.out.println("Dest addr:" + ip.destAddr);
 			String checksum = checksum(ip);
 
 			if (!ip.getChecksumBin().equals(checksum)) {
 				dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
+				System.out.println("Packet " + (i + 1) + " :Checksum fails");
 			} else {
 				if (lookupInterfaces(ip.destAddr)) {
+					System.out.println("Packet " + (i + 1) + " :LookupInterface succesful");
 					writeToMessageFile(ip);
+					continue;
 				}
 
 				String interfaceIP = lookupDest(ip.destAddr);
+				System.out.println("Longest Match interface: " + interfaceIP);
 				if (interfaceIP != null) {
 
 					// decrement TTL
 					ip.ttl = ip.ttl - 1;
 					if (ip.ttl <= 0) {
-
-						dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
-								"TTL exceeded");
+						dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "TTL exceeded");
 					}
 
-					// need to convert values of Forward HashMap 
-					// to same type as keys in Interfaces HashMap
-					//String[] matchInterfaceIP = interfaceIP.split(" ");
-					
-					// convert the IPAddress and IntMask to binary so we can match 
-					// in interfaces HashMap to get MTU
-					//String ipForFragmenting = ipAddressMask(matchInterfaceIP[0], maskToInt(matchInterfaceIP[1]));
-//					System.out.println("From LookUpDestination: "+interfaceIP + " -> " + ipForFragmenting 
-//							+ " \nFrom Interfaces HashMap " + matchInterfaceIP[0] + " = " + interfaces.get(ipForFragmenting));
-//
-//					fragment(ip, interfaces.get(ipForFragmenting));
+					// Check outgoing link and fragment
+					// fragment(ip, MTU);
 
+					// Forward packets
+					// forward(packets, interface);
+
+					continue;
 				}
 
 				else {
-					dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
-							"Destination not found");
+					dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Destination not found");
 				}
-
 			}
 		}
 	}
