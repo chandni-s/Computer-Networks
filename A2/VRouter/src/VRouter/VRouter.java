@@ -67,50 +67,6 @@ public class VRouter {
 			this.destAddr = destAddr;
 		}
 
-		public void setIhl(int ihl) {
-			this.ihl = ihl;
-		}
-
-		public void setTos(int tos) {
-			this.tos = tos;
-		}
-
-		public void setTotalLen(int totalLen) {
-			this.totalLen = totalLen;
-		}
-
-		public void setId(int id) {
-			this.id = id;
-		}
-
-		public void setFlags(String flags) {
-			this.flags = flags;
-		}
-
-		public void setFragOffset(int fragOffset) {
-			this.fragOffset = fragOffset;
-		}
-
-		public void setTtl(int ttl) {
-			this.ttl = ttl;
-		}
-
-		public void setProtocol(int protocol) {
-			this.protocol = protocol;
-		}
-
-		public void setChecksum(String checksum) {
-			this.checksum = checksum;
-		}
-
-		public void setSourceAddr(String sourceAddr) {
-			this.sourceAddr = sourceAddr;
-		}
-
-		public void setDestAddr(String destAddr) {
-			this.destAddr = destAddr;
-		}
-
 		public String getChecksumBin() {
 			String checksumVal = this.checksum.replace("-", "");
 			return checksumVal;
