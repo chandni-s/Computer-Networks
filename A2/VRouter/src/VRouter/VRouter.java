@@ -396,9 +396,9 @@ public class VRouter {
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
 
-				int mtus = Integer.parseInt(content[2]);
+				int mtus = Integer.parseInt(content[2].trim());
 
-				interfaces.put(content[0] + ";" + content[1], mtus);
+				interfaces.put(content[0].trim() + ";" + content[1].trim(), mtus);
 
 			}
 
@@ -449,9 +449,9 @@ public class VRouter {
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
 
-				String key = ipAddressMask(content[0], content[1]);
+				String key = ipAddressMask(content[0].trim(), content[1].trim());
 
-				forwardingTable.put(key, content[2] + ";" + content[3]);
+				forwardingTable.put(key, content[2].trim() + ";" + content[3].trim());
 
 			}
 
@@ -738,7 +738,6 @@ public class VRouter {
 		 */
 
 		int mtu = 0;
-
 		for (String key : interfaces.keySet()) {
 			if (interfaceIp.equals(key)) {
 				mtu = interfaces.get(key);
@@ -786,7 +785,7 @@ public class VRouter {
 					int interfaceMtu = getMTU(interfaceIP);
 					System.out.println("Interface MTU: " + interfaceMtu);
 
-					if (interfaceMtu < ip.totalLen) {
+					if (interfaceMtu < ip.totalLen && interfaceMtu != 0) {
 						System.out.println("Needs fragmentation");
 						List<IP4Packet> packetFragments = fragment(ip, interfaces.get(interfaceIP));
 						for (IP4Packet p : packetFragments) {
