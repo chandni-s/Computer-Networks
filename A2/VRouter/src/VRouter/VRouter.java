@@ -363,8 +363,7 @@ public class VRouter {
 		// If MTU is at least as great as the size of ip4packet,
 		// return ip4packet as is since no fragmentation is needed
 		if (ip4packet.totalLen < MTU) {
-			System.out.println("Size of packet is < MTU, no fragmentation "
-								+ "needed: " + ip4packet.totalLen);
+			//System.out.println("Size of packet is < MTU, no fragmentation " + "needed: " + ip4packet.totalLen);
 			fragments.add(ip4packet);
 			return fragments;
 		}
@@ -372,7 +371,7 @@ public class VRouter {
 		// if DF is set to 1, drop the packet an return [] list
 		char[] bits = String.valueOf(ip4packet.flags).toCharArray();
 		if (bits[1] == '1') {
-			System.out.println("DF Field set!");
+			//System.out.println("DF Field set!");
 			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id, 
 						"Fragmentation needed and DF set");
 			return fragments;
@@ -397,7 +396,7 @@ public class VRouter {
 
 		while (sizeOfEachPacket < ip4packet.totalLen) {
 
-			System.out.println("count " + count + "   packetNumber: " + packetNumber);
+			//System.out.println("count " + count + "   packetNumber: " + packetNumber);
 
 			// generate a new IP4Packet with new size
 			if (count < packetNumber) {
@@ -693,10 +692,10 @@ public class VRouter {
 			}
 		}
 		String[] interfaceIp = matchedInterfaceIP.split(";");
-		// System.out.println(interfaceIp[0]);
+		//System.out.println("Matched Interface:" + matchedInterfaceIP);
 		
 		// return matchedInterfaceIP; for fragmentation
-		return interfaceIp[0];
+		return matchedInterfaceIP;
 	}
 
 	public static void clearLogFile(String fileName) {
@@ -766,11 +765,11 @@ public class VRouter {
 
 	}
 	
-	public static Integer getMTU (String interfaceIp){
-		Integer mtu = null;
+	public static int getMTU (String interfaceIp){
+		int mtu = 0;
 		for (String key : interfaces.keySet()) {
-			String[] ipAndMask = key.split(";");
-			if (interfaceIp.equals(ipAndMask[0])) {
+			//String[] ipAndMask = key.split(";");
+			if (interfaceIp.equals(key)) {
 				// System.out.println(ipAndMask[0]);
 				mtu = interfaces.get(key);
 			}
@@ -791,11 +790,11 @@ public class VRouter {
 
 		readInterfaces();
 		readFowardingTable();
-		System.out.println("#of Packets :" + ip4Packets.size());
+		System.out.println("\n#of Packets :" + ip4Packets.size());
 
 		for (int i = 0; i < ip4Packets.size(); i++) {
 			IP4Packet ip = ip4Packets.get(i);
-			System.out.println("Dest addr:" + ip.destAddr);
+			System.out.println("\nPacket: " + (i + 1) + " Dest Addr: " + ip.destAddr);
 			String checksum = checksum(ip);
 
 			if (!ip.getChecksumBin().equals(checksum)) {
@@ -814,11 +813,20 @@ public class VRouter {
 				System.out.println("Longest Match interface: " + interfaceIP);
 				if (interfaceIP != null) {
 
-					// interfaceIP is: 190.120.0.0;255.255.0.0 
-						// 1. split interfaceIP by ; and pass [0] to forward
-						// 2. convert interfaceIP[1] from 255.255.0.0 to 16 - pass value MTU to fragment
-					//fragment(ip, interfaces.get(interfaceIP));
-
+					// Get MTU of matching interface
+					int interfaceMtu = getMTU(interfaceIP);
+					System.out.println("Interface MTU: " + interfaceMtu);
+					
+					if (interfaceMtu < ip.totalLen){
+						System.out.println("Needs fragmentation");
+						List<IP4Packet> packetFragments = fragment(ip, interfaces.get(interfaceIP));
+						for (IP4Packet p: packetFragments){
+							System.out.println("Fragments: " + p.id);
+							fragment(p, interfaceMtu);
+							forward(p, interfaceIP);
+						}
+					}
+					
 					forward(ip, interfaceIP);
 					continue;
 
