@@ -1,5 +1,10 @@
 package VRouter;
 
+/*
+ * Name: Chandni Sehgal, Student-No: 998973375
+ * Name: Srihitha Maryada Student-No: 999829164
+ */
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -11,6 +16,18 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+/*
+ * Assumptions: 
+ * Fragmentation - if fields are 000, it means we "may" fragment but it also
+ * means that its last packet. However, its packetSize > MTU - the packet gets
+ * fragmented and Flgas remains same as original EXCEPT the flag for last 
+ * fragment gets explicity set to "0" indicating that this is last fragmented
+ * packet.
+ * 
+ * A question was asked on Piazza for clarification - however, no response was
+ * given
+ */
 
 public class VRouter {
 
@@ -129,7 +146,9 @@ public class VRouter {
 					}
 				}
 			}
-			packetItems.add(content); // add the last packet to list array
+			
+			// add the last packet to list array
+			packetItems.add(content); 
 
 			IP4Packet ip4 = null;
 			for (int i = 0; i < packetItems.size(); i++) {
@@ -170,23 +189,6 @@ public class VRouter {
 				Integer.parseInt(chars[7]), Integer.parseInt(chars[8]),
 				chars[9], chars[10], chars[11]);
 
-		// Inet4Address srcAddr = null, destAddr = null;
-		//
-		// try {
-		// srcAddr = (Inet4Address) Inet4Address.getByName(ip.sourceAddr);
-		// destAddr = (Inet4Address) Inet4Address.getByName(ip.destAddr);
-		// } catch (UnknownHostException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-
-		// dropPacket(ip.sourceAddr, ip.destAddr, ip.id,
-		// "Testing out the drop packet");
-
-		// readInterfaces(ip.destAddr);
-		// checksum(ip);
-		// readInterfaces();
 
 		return ip;
 
@@ -204,6 +206,7 @@ public class VRouter {
 		// Call helper method convertHex that parses the ip4packet and
 		// returns a list where each element is a 4byte hexadecimal
 		ArrayList<String> hexList = convertHex(ip4packet);
+		
 
 		// Convert each 4byte hexadecimal value into 16 bit binary values
 		ArrayList<String> binList = new ArrayList<String>();
@@ -360,16 +363,21 @@ public class VRouter {
 		return value;
 
 	}
+	
 
 	public static List<IP4Packet> fragment(IP4Packet ip4packet, int MTU) {
+		
+		/*
+		 * Checks the outgoing link bandwidth for MTU (maximum transmission unit.) 
+		 * If link MTU is less than the packet size, fragments the packet by invoking 
+		 * fragment(ip4packet, MTU).
+		 */
 
 		List<IP4Packet> fragments = new ArrayList<IP4Packet>();
 
 		// If MTU is at least as great as the size of ip4packet,
 		// return ip4packet as is since no fragmentation is needed
-		if (ip4packet.totalLen < MTU) {
-			// System.out.println("Size of packet is < MTU, no fragmentation " +
-			// "needed: " + ip4packet.totalLen);
+		if (ip4packet.totalLen == MTU) {
 			fragments.add(ip4packet);
 			return fragments;
 		}
@@ -377,7 +385,7 @@ public class VRouter {
 		// if DF is set to 1, drop the packet an return [] list
 		char[] bits = String.valueOf(ip4packet.flags).toCharArray();
 		if (bits[1] == '1') {
-			// System.out.println("DF Field set!");
+			System.out.println("DF Field set!");
 			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id,
 					"Fragmentation needed and DF set");
 			return fragments;
@@ -401,9 +409,6 @@ public class VRouter {
 		int offset = (MTU - 20) / 8;
 
 		while (sizeOfEachPacket < ip4packet.totalLen) {
-
-			// System.out.println("count " + count + " packetNumber: " +
-			// packetNumber);
 
 			// generate a new IP4Packet with new size
 			if (count < packetNumber) {
@@ -463,28 +468,37 @@ public class VRouter {
 
 	public static boolean dropPacket(String sourceAddr, String destAddr,
 			int ID, String message) {
+		
+		/*
+		 * Writes a String message to Messages.txt file 
+		 */
 
 		String errMsg = "Packet " + ID + " from " + sourceAddr + " to "
 				+ destAddr + ": " + message;
 
-		if (writeToFile("Messages.txt", errMsg)) {
-			return true;
-		}
-		return false;
+		return writeToFile("Messages.txt", errMsg);
+
 	}
 
 	public static boolean writeToMessageFile(IP4Packet ip) {
+		
+		/*
+		 * Helper function that writes successful messages to Message.txt
+		 */
 
 		String msg = "Packet from " + ip.sourceAddr + " destined for this "
 				+ "router successfully received: " + ip.id;
-		if (writeToFile("Messages.txt", msg)) {
-			return true;
-		}
-		return false;
+		
+		return writeToFile("Messages.txt", msg);
+
 
 	}
 
 	public static boolean writeToFile(String fileName, String input) {
+		
+		/*
+		 * A helper function that creates a file and writes the message to it
+		 */
 
 		File msgFile = null;
 		FileWriter msgout = null;
@@ -494,7 +508,7 @@ public class VRouter {
 
 			msgFile = new File(fileName);
 
-			msgout = new FileWriter(msgFile, true); // remove append
+			msgout = new FileWriter(msgFile, true);
 			bufMsg = new BufferedWriter(msgout);
 
 			bufMsg.write("");
@@ -515,21 +529,17 @@ public class VRouter {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
 			}
 		}
-
 	}
 
-	/*
-	 * 
-	 * store all interfaces in a hash map after reading from file split ; - and
-	 * first two values and store the last one - generates the prefix: ipAdd &
-	 * mask
-	 * 
-	 * below function should just return true or false
-	 */
+	
 	public static void readInterfaces() {
+		
+		/*
+		 * Read Interfaces.txt and store the Interface-IP and masks
+		 * as keys, and MTU as Value, in interfaces HashMap
+		 */
 
 		File file = null;
 		FileReader readFile = null;
@@ -543,17 +553,15 @@ public class VRouter {
 			String line;
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
-				content = line.split(";"); // escape ;
+				content = line.split(";");
 
 				int mtus = Integer.parseInt(content[2]);
 
-				// String maskedIp = ipAddressMask(content[0], content[1]);
-				// System.out.println(maskedIp);
 				interfaces.put(content[0] + ";" + content[1], mtus);
 
 			}
 
-			// printing HashMap Keys:Values
+			// Testing purposes: printing HashMap Keys:Values 
 			for (String name : interfaces.keySet()) {
 
 				String key = name;
@@ -582,20 +590,29 @@ public class VRouter {
 
 	public static String ipAddressMask(String ipAddress, String mask) {
 
+		/*
+		 * A helper function that takes in an IP Address and mask 
+		 * associated with it (182.30.45.5 255.255.0.0) 
+		 * and returns 
+		 */
+		
 		String[] ipOctets = ipAddress.split("\\.");
-		// System.out.println(ipOctets);
-		// System.out.println(mask);
 		int maskLen = Integer.parseInt(mask);
 		String result = "";
+		
 		for (int i = 0; i < ipOctets.length; i++) {
 			result += convertToBinary(ipOctets[i]);
 		}
-		// System.out.println(result);
+
 		return result.substring(0, maskLen);
 
 	}
 
 	public static String convertToBinary(String input) {
+		
+		/*
+		 * Helper function that converts a string to binary
+		 */
 
 		int b = Integer.parseInt(input);
 		String bin = addPadding(Integer.toBinaryString(b), 8, "0");
@@ -603,10 +620,15 @@ public class VRouter {
 	}
 
 	public static boolean lookupInterfaces(String ipAddress) {
+		
+		/*
+		 * Looks up the IPaddress passed in, returns true if it is 
+		 * one of VRouter’s interfaces, false otherwise.
+		 */
+		
 		for (String key : interfaces.keySet()) {
 			String[] ipAndMask = key.split(";");
 			if (ipAddress.equals(ipAndMask[0])) {
-				// System.out.println(ipAndMask[0]);
 				return true;
 			}
 		}
@@ -615,6 +637,11 @@ public class VRouter {
 	}
 
 	public static void readFowardingTable() {
+		
+		/*
+		 * Read Forward.txt and store the IPAddress and masks
+		 * as keys, and InterfaceIPAddress-Maks as Value, in forward HashMap
+		 */
 
 		File file = null;
 		FileReader readFile = null;
@@ -629,12 +656,14 @@ public class VRouter {
 			String[] content;
 			while ((line = bufRead.readLine()) != null) {
 				content = line.split(";");
-				// String mask = maskToInt(content[1]);
+				
 				String key = ipAddressMask(content[0], content[1]);
 
 				forwardingTable.put(key, content[2] + ";" + content[3]);
 
 			}
+			
+			// Testing purposes: print forwarding table
 			for (String name : forwardingTable.keySet()) {
 
 				String key = name;
@@ -658,29 +687,26 @@ public class VRouter {
 		}
 
 	}
-
-	/*
-	 * public static String maskToInt(String subnet) { String[] subnetOctets =
-	 * subnet.split("\\."); int count = 0; for (int i = 0; i <
-	 * subnetOctets.length; i++) { if (subnetOctets[i].equals("255")) { count +=
-	 * 1; } }
-	 * 
-	 * // handling Class-A if (count == 1) { return "8"; }
-	 * 
-	 * // handling Class-B else if (count == 2) { return "16"; }
-	 * 
-	 * // handling Class-C else { return "24"; } }
-	 */
+	
 
 	public static String lookupDest(String ipAddress) {
+		
+		/*
+		 * Looks up the IPaddress passed in the forwarding table by 
+		 * longest prefix match. If finds a match, then returns the 
+		 * matching interface. Otherwise, returns null.
+		 */
 
 		String matchedInterfaceIP = null;
+		
 		// convert destinationIPAddress to binary only up to longest prefix
 		// length
 		String destAddrInBinary = ipAddressMask(ipAddress, "32");
-		// System.out.println(destAddrInBinary);
+		
 		int longestMatch = 0;
 
+		// go through all keys in forward HashMap and performs
+		// the longest prefix match on destinationIPAddress
 		for (String key : forwardingTable.keySet()) {
 
 			int keyLen = key.length();
@@ -695,7 +721,13 @@ public class VRouter {
 	}
 
 	public static void clearLogFile(String fileName) {
+		
+		/*
+		 * Clears the text file if exists, before writing any contents to it
+		 */
+		
 		File file = new File(fileName);
+		
 		if (file.exists()) {
 			try {
 				FileWriter fw = new FileWriter(file.getAbsolutePath());
@@ -710,26 +742,26 @@ public class VRouter {
 			try {
 				file.createNewFile();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
 
-	/*
-	 * Forward the packet to its destination and write it to OutPackets.txt
-	 */
+	
 
 	public static boolean forward(IP4Packet ip4packet, String interfaceIP) {
+		
+		/*
+		 * Forward the packet to its destination and write it to OutPackets.txt
+		 */
 
 		String checksum = checksum(ip4packet);
 
-		// format the checksum to have 1111-0000-1111-0000 instead of
-		// 1111000011110000
+		// format the checksum to have 1111-0000-1111-0000 
+		// instead of 1111000011110000
 		StringBuilder finalChecksum = new StringBuilder(checksum);
 		for (int i = 0; i < checksum.length() - 1; i += 5) {
 			finalChecksum.insert(i + 4, "-");
-
 		}
 
 		ip4packet.checksum = finalChecksum.toString();
@@ -749,9 +781,17 @@ public class VRouter {
 	}
 
 	public static boolean checkTTL(IP4Packet ip4packet) {
+		
+		/*
+		 * Reduces the time to live for packet by 1 
+		 * if packet is not found in lookupInterfaces 
+		 * 
+		 * Checks the time to live for VRouter's packet
+		 * if time < 0, the packet is dropped
+		 */
 
 		ip4packet.ttl = ip4packet.ttl - 1;
-		if (ip4packet.ttl <= 0) {
+		if (ip4packet.ttl < 0) {
 			dropPacket(ip4packet.sourceAddr, ip4packet.destAddr, ip4packet.id,
 					"TTL exceeded");
 			System.out.println("TTL exceeded");
@@ -763,17 +803,22 @@ public class VRouter {
 	}
 
 	public static int getMTU(String interfaceIp) {
+		
+		/*
+		 * Helper function for main()
+		 * Get MTU values from interfaces HashMap based on 
+		 * Interface IP Address and Mask returned by lookupDest
+		 */
+		
 		int mtu = 0;
+		
 		for (String key : interfaces.keySet()) {
-			// String[] ipAndMask = key.split(";");
 			if (interfaceIp.equals(key)) {
-				// System.out.println(ipAndMask[0]);
 				mtu = interfaces.get(key);
 			}
 		}
 
 		return mtu;
-
 	}
 
 	public static void main(String[] args) {
