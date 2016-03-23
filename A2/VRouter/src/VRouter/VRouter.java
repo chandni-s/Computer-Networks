@@ -796,11 +796,12 @@ public class VRouter {
 						List<IP4Packet> packetFragments = fragment(ip, interfaces.get(interfaceIP));
 						for (IP4Packet p : packetFragments) {
 							System.out.println("Fragments: " + p.id);
-							fragment(p, interfaceMtu);
 							forward(p, interfaceIP);
 						}
+						continue;
 					}
-
+					
+					System.out.println("No fragment needed");
 					forward(ip, interfaceIP);
 					continue;
 
