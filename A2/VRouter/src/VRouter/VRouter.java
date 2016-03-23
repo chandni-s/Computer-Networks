@@ -200,6 +200,7 @@ public class VRouter {
 		// keep track of size and counter for each packet
 		int sizeOfEachPacket = 0;
 		int count = 1;
+		int sizeOfLastPacket = 0;
 
 		// get Offset value
 		int offset = (MTU - 20) / 8;
@@ -217,32 +218,40 @@ public class VRouter {
 				if (count == 1) {
 					newIPacket.fragOffset = 0;
 				}
-
-				// else set the offet based on the counter of the packet ( -1:
-				// except the last one)
+				// else calculate and update fragment
 				else {
 					newIPacket.fragOffset = offset * (count - 1);
 				}
 
+				sizeOfEachPacket = sizeOfEachPacket + (MTU - 20);  // 1440 why? 960+480=1440, 
+				
 			}
 
 			// if its last fragmented packet
 			else {
 
 				// Calculate the size of last fragmented packet
-				int sizeOfLastPacket = ip4packet.totalLen - ((MTU - 20) * (packetNumber - 1));
+				sizeOfLastPacket = ip4packet.totalLen
+						- ((MTU - 20) * (packetNumber - 1));
+				
+				ip4packet.totalLen = sizeOfLastPacket;
+				ip4packet.flags = "000";
+				ip4packet.fragOffset = offset * (count - 1);
 
-				// set the flag of last fragmented packet to 000
-				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl, ip4packet.tos, sizeOfLastPacket,
-						ip4packet.id, "000", offset * (count - 1), ip4packet.ttl - 1, ip4packet.protocol,
-						ip4packet.checksum, ip4packet.sourceAddr, ip4packet.destAddr);
+				newIPacket = vr.new IP4Packet(ip4packet.version, ip4packet.ihl,
+						ip4packet.tos, ip4packet.totalLen, ip4packet.id, ip4packet.flags,
+						ip4packet.fragOffset, ip4packet.ttl,
+						ip4packet.protocol, ip4packet.checksum,
+						ip4packet.sourceAddr, ip4packet.destAddr);
+				
+				sizeOfEachPacket = sizeOfLastPacket;
 
 			}
 
 			// update the counter for all fragments and add each fragment to the
 			// list
 			count += 1;
-			sizeOfEachPacket += (MTU - 20);
+			
 			fragments.add(newIPacket);
 		}
 
