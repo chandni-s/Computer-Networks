@@ -1,3 +1,2 @@
-Packet from 190.16.10.1 destined for this router successfully received: 4166
+Packet 4166 from 190.16.10.1 to 171.22.33.99: Destination not found
 Packet 2172 from 234.54.0.0 to 182.250.15.5: Destination not found
-Packet 5267 from 234.72.11.0 to 150.111.0.5: Checksum Error

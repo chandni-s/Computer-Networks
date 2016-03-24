@@ -20,7 +20,12 @@ import java.util.List;
 /*
  * NOTE: All helper methods are placed below the required methods
  * (mentioned in PA-2.pdf) for marker's convenience. 
+ * 
+ * Assumption: Since it is possible that two Interface IPAddresses
+ * are same but differ only due to there IP-Mask, we decided to
+ * keep the mask in OutPackets.txt, to distinguish this.
  */
+
 
 public class VRouter {
 
@@ -276,7 +281,6 @@ public class VRouter {
 		}
 
 		ip4packet.checksum = finalChecksum.toString();
-		String interfaceAddr = interfaceIP.split(";")[0].toString();
 
 		// create new packet
 		String writeToOutPacket = ip4packet.version + "; " + ip4packet.ihl
@@ -285,7 +289,7 @@ public class VRouter {
 				+ ip4packet.fragOffset + "\n" + ip4packet.ttl + "; "
 				+ ip4packet.protocol + "; " + ip4packet.checksum + "\n"
 				+ ip4packet.sourceAddr + "\n" + ip4packet.destAddr + "\n"
-				+ interfaceAddr + "\n";
+				+ interfaceIP + "\n";
 
 		// write them to OutPackets
 		return writeToFile("OutPackets.txt", writeToOutPacket);
