@@ -193,6 +193,7 @@ public class VRouter {
 
 		// Get number of fragments needed for the packet
 		double numOfFragments = Math.ceil((float) (ip4packet.totalLen - 20) / (MTU - 20));
+		System.out.println(numOfFragments);
 
 		// convert number of fragment to integer
 		int packetNumber = (int) numOfFragments;
