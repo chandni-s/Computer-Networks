@@ -395,8 +395,8 @@ public class VRouter {
 		VRouter vr = new VRouter();
 
 		// Get number of fragments needed for the packet
-		double numOfFragments = Math.ceil((float) (ip4packet.totalLen - 20)
-				/ (MTU - 20));
+		
+		double numOfFragments = Math.ceil((float) (ip4packet.totalLen / (MTU - 20.00)));
 
 		// convert number of fragment to integer
 		int packetNumber = (int) numOfFragments;
@@ -839,6 +839,7 @@ public class VRouter {
 			System.out.println("\nPacket: " + (i + 1) + " Dest Addr: "
 					+ ip.destAddr);
 			String checksum = checksum(ip);
+
 
 			if (!ip.getChecksumBin().equals(checksum)) {
 				dropPacket(ip.sourceAddr, ip.destAddr, ip.id, "Checksum Error");
