@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -14,28 +16,30 @@ import java.util.HashMap;
  *
  */
 public class DVRouter {
-	
-	
+
 	// Destination <NextHop:Cost>
 	private static HashMap<String, RoutingTable> dvrouter = new HashMap<String, RoutingTable>();
-	
-	protected class RoutingTable
-	{
+
+	protected class RoutingTable {
 		String nextHop;
 		int totalCost;
-		
+
 		public RoutingTable(String nextHop, int totalCost) {
 			this.nextHop = nextHop;
 			this.totalCost = totalCost;
 		}
 	}
-	
+
 	public static void readRoutingTable(String filename) {
 
 		File file = null;
 		FileReader readFile = null;
 		BufferedReader bufRead = null;
-		String[] content = null;
+		// ArrayList<String> content = new ArrayList<String>();
+		String[] hopCost = null;
+
+		int sequenceNum = 0;
+		String routerID = null;
 
 		try {
 			file = new File(filename);
@@ -43,18 +47,35 @@ public class DVRouter {
 			bufRead = new BufferedReader(readFile);
 
 			String line;
-			
+
+			int count = 0;
 			while ((line = bufRead.readLine()) != null) {
-				
-				updateRoutingTable(line);
-//				if (line.contains(";")) {
-//					content = line.split(";");
-//					updateRoutingTable(content);
-//				}
-//				// get destination i.e A
-//				else {
-//					System.out.println(line.split(" ")[0]);
-//				}
+
+				// Get the sequence number
+				if (count == 0) {
+					sequenceNum = Integer.parseInt(line);
+					count += 1;
+				}
+
+				// get routerID
+				else if (count == 1) {
+					routerID = line;
+					count += 1;
+				}
+
+				// get Hops and Cost
+				else {
+					hopCost = line.trim().split(";");
+					count += 1;
+					if (hopCost != null && hopCost.length > 1) {
+
+						updateRoutingTable(routerID, hopCost);
+					}
+					if (line.length() == 0) {
+						System.out.println("line is empty");
+						count = 0;
+					}
+				}
 			}
 
 		} catch (Exception e) {
@@ -73,34 +94,29 @@ public class DVRouter {
 
 		}
 	}
-	
-	public static RoutingTable updateRoutingTable(String content) {
-		
-		String[] hopCost = null;
+
+	public static RoutingTable updateRoutingTable(String routerID, String[] hopCost) {
+
 		RoutingTable rt = null;
 		DVRouter dv = new DVRouter();
-		String routerID = null;
+
+		String[] result = Arrays.toString(hopCost).split(",");
+
 		
-			if (content.contains(";")) {
-				hopCost = content.split(";");
-				System.out.println("Hostcost: " + hopCost[0] + hopCost[1]);
-				//rt = dv.new RoutingTable(hopCost[0].trim(), Integer.parseInt(hopCost[1].trim()));
-			}
-			else {
-				System.out.println("blahhhh "+content.split(" ")[0]);
-				routerID = content.split(" ")[0];
-				
-			}
+		// Create object
+		rt = dv.new RoutingTable(result[0].toString().trim().replace("[", ""),
+				Integer.parseInt(result[1].toString().trim().replace("]", "")));
+
 		
-		// put keys: Destination, Values: <NextHop-totalCost> 
-		//dvrouter.put(routerID, dv.new RoutingTable(rt.nextHop, rt.totalCost));
-		
+		// Update the HashMap: Destination, Values: <NextHop-totalCost>
+		dvrouter.put(routerID, dv.new RoutingTable(rt.nextHop, rt.totalCost));
+		System.out.println(dvrouter.keySet());
+
 		return rt;
 	}
 
-	
 	public static void main(String[] args) {
-		
+
 		readRoutingTable("InUpdates.txt");
 	}
 }
