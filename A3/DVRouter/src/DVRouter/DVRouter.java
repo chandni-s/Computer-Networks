@@ -69,7 +69,12 @@ public class DVRouter {
 					count += 1;
 					if (hopCost != null && hopCost.length > 1) {
 
-						updateRoutingTable(routerID, hopCost);
+						// Create object
+						RoutingTable rt = updateRoutingTable(hopCost);
+						
+						// put routerID and Routing object into hashMap
+						dvrouter.put(routerID, rt);
+						//System.out.println(dvrouter.keySet());
 					}
 					if (line.length() == 0) {
 						System.out.println("line is empty");
@@ -95,23 +100,13 @@ public class DVRouter {
 		}
 	}
 
-	public static RoutingTable updateRoutingTable(String routerID, String[] hopCost) {
+	public static RoutingTable updateRoutingTable(String[] hopCost) {
 
 		RoutingTable rt = null;
 		DVRouter dv = new DVRouter();
 
-		String[] result = Arrays.toString(hopCost).split(",");
-
-		
 		// Create object
-		rt = dv.new RoutingTable(result[0].toString().trim().replace("[", ""),
-				Integer.parseInt(result[1].toString().trim().replace("]", "")));
-
-		
-		// Update the HashMap: Destination, Values: <NextHop-totalCost>
-		dvrouter.put(routerID, dv.new RoutingTable(rt.nextHop, rt.totalCost));
-		System.out.println(dvrouter.keySet());
-		System.out.println(dvrouter.values().toString());
+		rt = dv.new RoutingTable(hopCost[0],Integer.parseInt(hopCost[1].trim()));
 
 		return rt;
 	}
