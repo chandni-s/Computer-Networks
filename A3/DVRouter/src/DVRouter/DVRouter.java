@@ -21,10 +21,12 @@ public class DVRouter {
 	private static HashMap<String, RoutingTable> dvrouter = new HashMap<String, RoutingTable>();
 
 	protected class RoutingTable {
+		String destination;
 		String nextHop;
 		int totalCost;
 
-		public RoutingTable(String nextHop, int totalCost) {
+		public RoutingTable(String destination, String nextHop, int totalCost) {
+			this.destination = destination;
 			this.nextHop = nextHop;
 			this.totalCost = totalCost;
 		}
@@ -70,14 +72,11 @@ public class DVRouter {
 					if (hopCost != null && hopCost.length > 1) {
 
 						// Create object
-						RoutingTable rt = updateRoutingTable(hopCost);
-						
+						RoutingTable rt = updateRoutingTable(routerID, hopCost);
 						// put routerID and Routing object into hashMap
-						dvrouter.put(routerID, rt);
-						//System.out.println(dvrouter.keySet());
+						
 					}
 					if (line.length() == 0) {
-						System.out.println("line is empty");
 						count = 0;
 					}
 				}
@@ -100,13 +99,20 @@ public class DVRouter {
 		}
 	}
 
-	public static RoutingTable updateRoutingTable(String[] hopCost) {
+	public static RoutingTable updateRoutingTable(String routerID, String[] hopCost) {
 
 		RoutingTable rt = null;
 		DVRouter dv = new DVRouter();
 
 		// Create object
-		rt = dv.new RoutingTable(hopCost[0],Integer.parseInt(hopCost[1].trim()));
+		rt = dv.new RoutingTable(routerID, hopCost[0],Integer.parseInt(hopCost[1].trim()));
+		//System.out.println(rt.nextHop + " GOOOT " + rt.totalCost);
+		
+		
+		dvrouter.put(rt.destination, rt);
+		//System.out.println("Keys: " + dvrouter.keySet() + "Values: ");
+		
+		
 
 		return rt;
 	}
@@ -114,5 +120,9 @@ public class DVRouter {
 	public static void main(String[] args) {
 
 		readRoutingTable("InUpdates.txt");
+		for (int i=0; i<dvrouter.size(); i++) {
+
+			System.out.println("Values: " + dvrouter.get(i));
+		}
 	}
 }
