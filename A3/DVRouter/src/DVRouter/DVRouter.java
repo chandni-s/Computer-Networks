@@ -22,18 +22,18 @@ public class DVRouter {
 	protected static String routerID = null;
 
 	// Routing Table = Destination: <Next Hop, Cost>
-	private static HashMap<String, RoutingTable> dvrouter = new HashMap<String, RoutingTable>();
+	private static HashMap<String, RoutingTableType> dvrouter = new HashMap<String, RoutingTableType>();
 	
 	//DVUpdate
 	private static HashMap<String, Integer> dvUpdate = new HashMap<String, Integer>();
 	
 
-	protected class RoutingTable {
+	protected class RoutingTableType {
 		String destination;
 		String nextHop;
 		int totalCost;
 
-		public RoutingTable(String destination, String nextHop, int totalCost) {
+		public RoutingTableType(String destination, String nextHop, int totalCost) {
 			this.destination = destination;
 			this.nextHop = nextHop;
 			this.totalCost = totalCost;
@@ -127,13 +127,13 @@ public class DVRouter {
 		return updateList;
 	}
 
-	public static RoutingTable updateRoutingTable(String routerID, String[] hopCost) {
+	public static RoutingTableType updateRoutingTable(String dest, int cost) {
 
-		RoutingTable rt = null;
+		RoutingTableType rt = null;
 		DVRouter dv = new DVRouter();
 
 		// Create object
-		rt = dv.new RoutingTable(routerID, hopCost[0],Integer.parseInt(hopCost[1].trim()));
+		rt = dv.new RoutingTableType(dest, routerID, cost);
 		//System.out.println(rt.nextHop + " GOOOT " + rt.totalCost);
 		
 		
@@ -150,30 +150,92 @@ public class DVRouter {
 		routerID = attributes[1];
 		//System.out.println(seqNum + ":" + routerID);
 		
-		dvUpdate.put(routerID, 0);
+		//dvUpdate.put(routerID, 0);
 		
 		for (int i = 2; i < attributes.length; i++){
 			String [] dvKeys = attributes[i].split(";");
 			int cost = Integer.parseInt(dvKeys[1].trim());
 			dvUpdate.put(dvKeys[0], cost);
 		}
-		System.out.println(dvUpdate.keySet());
+		/*for (String key: dvUpdate.keySet()) {
+		//RoutingTable obj = dvrouter.get(key);
+		System.out.println("Key:" + key + " Values:" + dvUpdate.get(key));
+		}*/
 		}
 	
 	public static void routingTable(){
 		
+		String dest;
+		int costUpdate;
+		int toDv = 0;
+		int newCost = 0;
+		
+		for (String key: dvUpdate.keySet()){
+			dest = key;
+			costUpdate = dvUpdate.get(key);
+			
+			System.out.println("key " + key);
+			
+			if (key.equals("DV")){
+				dest = routerID;
+				toDv = dvUpdate.get(key);
+				newCost = toDv;
+				//System.out.println(newCost);	
+			}
+			
+			if (dvrouter.containsKey(dest)){
+				//System.out.println("Has Key: "+ dest);
+				RoutingTableType rt = dvrouter.get(dest);
+				int dvCost = rt.totalCost;
+				System.out.println("DVCost " + dvCost);
+				System.out.println("Update " + costUpdate);
+				if (costUpdate < dvCost){
+					//System.out.println("Update " + costUpdate);
+					rt.nextHop = routerID;
+					
+					if (newCost == 0){
+						newCost = toDv + costUpdate;
+						rt.totalCost = newCost;
+					}
+					rt.totalCost = newCost;
+					
+					//System.out.println(costUpdate);
+					
+				}
+			}
+			
+			else{
+				//Add new RoutingTableType
+				if (newCost == 0){
+					newCost = toDv + costUpdate;
+				}
+				updateRoutingTable(dest, newCost);
+				
+			}
+			newCost = 0;
+			toDv = 0;
+			costUpdate = 0;
+		}
+		for (String key: dvrouter.keySet()) {
+			RoutingTableType obj = dvrouter.get(key);
+			System.out.println("Key:" + key + " Values:" + obj.nextHop + " " + obj.totalCost);
+		}
 	}
 
 	public static void main(String[] args) {
 		
 		List<String> updateList = new ArrayList<String>();
 		updateList = readRoutingTable("InUpdates.txt");
-		dvUpdateTable(updateList.get(0));
+		//dvUpdateTable(updateList.get(0));
+		//routingTable();
+		
 		
 		//System.out.println(updateList);
-		/*for (int i=0; i < updateList.size(); i++){
+		for (int i=0; i < updateList.size(); i++){
 			dvUpdateTable(updateList.get(i));
-		}*/
+			routingTable();
+		}
+		
 		
 		
 		/*for (String key: dvrouter.keySet()) {
