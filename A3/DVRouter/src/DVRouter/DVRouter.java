@@ -237,7 +237,6 @@ public class DVRouter {
 			}
 		}
 	}
-<<<<<<< HEAD
 
 	public static void clearLogFile(String fileName) {
 
@@ -257,81 +256,6 @@ public class DVRouter {
 				pw.close();
 			} catch (IOException e) {
 				e.printStackTrace();
-=======
-	public static void dvUpdateTable(String update){
-		
-		String [] attributes = update.split("\n");
-		seqNum = attributes[0];
-		routerID = attributes[1];
-		//System.out.println(seqNum + ":" + routerID);
-		
-		//dvUpdate.put(routerID, 0);
-		
-		for (int i = 2; i < attributes.length; i++){
-			String [] dvKeys = attributes[i].split(";");
-			int cost = Integer.parseInt(dvKeys[1].trim());
-			String dvDest = dvKeys[0];
-			dvUpdate.put(dvDest, cost);
-			if (dvDest.equals("DV")){
-				routerToDv = cost;
-			}
-		}
-		/*for (String key: dvUpdate.keySet()) {
-		//RoutingTable obj = dvrouter.get(key);
-		System.out.println("Key:" + key + " Values:" + dvUpdate.get(key));
-		}
-		System.out.println("\n");*/
-		}
-	
-	public static void routingTable(){
-		
-		for (String key: dvUpdate.keySet()){
-		
-			int costUpdate;
-			int newCost = 0;
-			String dest;
-			
-			if (key.equals("DV")){
-				dest = routerID;
-				costUpdate = dvUpdate.get(key);
-				routerToDv = costUpdate;
-				newCost = costUpdate;
-				//System.out.println(newCost);	
-			}
-			
-			else{
-				dest = key;
-				costUpdate = dvUpdate.get(key);	
-			}
-			
-			if (dvrouter.containsKey(dest)){
-				//System.out.println("Has Key: "+ dest);
-				RoutingTableType rt = dvrouter.get(dest);
-				int dvCost = rt.totalCost;
-				if (costUpdate < dvCost){
-					//System.out.println("Update " + costUpdate);
-					rt.nextHop = routerID;
-					
-					if (newCost == 0){
-						//System.out.println(routerToDv);
-						newCost = routerToDv + costUpdate;
-						rt.totalCost = newCost;
-					}
-					rt.totalCost = newCost;
-					
-					//System.out.println(costUpdate);
-					
-				}
-			}
-			
-			else{
-				//Add new RoutingTableType
-				if (newCost == 0){
-					newCost = routerToDv + costUpdate;
-				}
-				updateRoutingTable(dest, newCost);
-				
->>>>>>> 2aef586... Fixed adding cost
 			}
 		}
 
