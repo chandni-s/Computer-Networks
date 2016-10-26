@@ -8,6 +8,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.Set;
+>>>>>>> 2a08e6c... wrote outupdates func
 
 /**
  * @Name Chandni Sehgal StudentNo: 998973375
@@ -16,12 +20,17 @@ import java.util.List;
  */
 public class DVRouter {
 
+<<<<<<< HEAD
 	protected static String seqNum = null;
 	protected static String routerID = null;
 	protected static int routerToDv = 0;
 
 	private static HashMap<String, RoutingTableType> dvrouter = new HashMap<String, RoutingTableType>();
 	private static HashMap<String, Integer> dvUpdate = new HashMap<String, Integer>();
+=======
+	// Destination <NextHop:Cost>
+	private static HashMap<String, RoutingTable> dvrouter = new HashMap<String, RoutingTable>();
+>>>>>>> 2a08e6c... wrote outupdates func
 	static List<String> update = new ArrayList<String>();
 
 	protected class RoutingTableType {
@@ -47,7 +56,14 @@ public class DVRouter {
 		FileReader readFile = null;
 		BufferedReader bufRead = null;
 
+<<<<<<< HEAD
 		List<String> updateList = new ArrayList<String>();
+=======
+		int sequenceNum = 0;
+		String routerID = null;
+		
+		
+>>>>>>> 2a08e6c... wrote outupdates func
 
 		try {
 			file = new File(filename);
@@ -62,9 +78,37 @@ public class DVRouter {
 				if (line.length() != 0) {
 					update += line + "\n";
 
+<<<<<<< HEAD
 				} else {
 					updateList.add(update);
 					update = "";
+=======
+				// get routerID
+				else if (count == 1) {
+					routerID = line;
+					count += 1;
+				}
+
+				// get Hops and Cost
+				else {
+					hopCost = line.trim().split(";");
+					count += 1;
+					
+					if (hopCost != null && hopCost.length > 1) {
+						
+						update.add(sequenceNum+"");
+						update.add(routerID);//" + hopCost[0] + " " + hopCost[1].trim() + "\n");
+
+						// Create object
+						//RoutingTable rt = updateRoutingTable(routerID, hopCost);
+						// put routerID and Routing object into hashMap
+						
+					}
+					if (line.length() == 0) {
+						count = 0;
+						update.add("\n");
+					}
+>>>>>>> 2a08e6c... wrote outupdates func
 				}
 			}
 
@@ -187,6 +231,40 @@ public class DVRouter {
 
 		return rt;
 	}
+	
+	public static void writeOutFile() {
+		
+		File msgFile = null;
+		FileWriter msgout = null;
+		BufferedWriter bufMsg = null;
+
+		try {
+
+			msgFile = new File("./OutUpdates.txt");
+
+			msgout = new FileWriter(msgFile, true);
+			bufMsg = new BufferedWriter(msgout);
+
+			bufMsg.write("");
+			bufMsg.write("\n");
+			bufMsg.flush();
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+
+		} finally {
+			if (msgFile != null) {
+				try {
+					bufMsg.close();
+					msgout.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
 
 	public static void writeOutFile() {
 		/*
@@ -275,9 +353,16 @@ public class DVRouter {
 		List<String> updateList = new ArrayList<String>();
 		updateList = readRoutingTable("InUpdates.txt");
 
+<<<<<<< HEAD
 		for (int i = 0; i < updateList.size(); i++) {
 			dvUpdate.clear();
 			dvUpdateTable(updateList.get(i));
+=======
+			//Set<String> keyss = dvrouter.keySet();
+			System.out.println("Values: " + dvrouter.get(i));
+>>>>>>> 2a08e6c... wrote outupdates func
 		}
+		
+		System.out.println(update);
 	}
 }
